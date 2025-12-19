@@ -1,14 +1,13 @@
-"use client"
+'use client';
 
-import * as React from "react"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { Controller, useForm } from "react-hook-form"
-import { toast } from "sonner"
-import * as z from "zod"
-import Link from "next/link"
-import { useRouter } from "next/navigation"
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Controller, useForm } from 'react-hook-form';
+import { toast } from 'sonner';
+import * as z from 'zod';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
-import { Button } from "@/components/ui/button"
+import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
@@ -16,36 +15,36 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card"
+} from '@/components/ui/card';
 import {
   Field,
   FieldError,
   FieldGroup,
   FieldLabel,
-} from "@/components/ui/field"
-import { Input } from "@/components/ui/input"
+} from '@/components/ui/field';
+import { Input } from '@/components/ui/input';
 
 const formSchema = z.object({
-  email: z.string().email("Please enter a valid email address."),
-})
+  email: z.string().email('Please enter a valid email address.'),
+});
 
 export default function ForgotPassword() {
-  const router = useRouter()
+  const router = useRouter();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      email: "",
+      email: '',
     },
-  })
+  });
 
   function onSubmit(data: z.infer<typeof formSchema>) {
-    toast("Reset Code Sent", {
+    toast('Reset Code Sent', {
       description: `We have sent a verification code to ${data.email}`,
-    })
+    });
     // Mock navigation to code verification
     setTimeout(() => {
-        router.push("/Code")
-    }, 1000)
+      router.push('/code');
+    }, 1000);
   }
 
   return (
@@ -59,7 +58,10 @@ export default function ForgotPassword() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <form id="forgot-password-form" onSubmit={form.handleSubmit(onSubmit)}>
+            <form
+              id="forgot-password-form"
+              onSubmit={form.handleSubmit(onSubmit)}
+            >
               <FieldGroup>
                 <Controller
                   name="email"
@@ -72,7 +74,9 @@ export default function ForgotPassword() {
                         id="email"
                         type="email"
                         placeholder="m@example.com"
-                        className={fieldState.invalid ? "border-destructive" : ""}
+                        className={
+                          fieldState.invalid ? 'border-destructive' : ''
+                        }
                       />
                       {fieldState.invalid && (
                         <FieldError errors={[fieldState.error]} />
@@ -84,12 +88,19 @@ export default function ForgotPassword() {
             </form>
           </CardContent>
           <CardFooter className="flex flex-col gap-4">
-            <Button type="submit" form="forgot-password-form" className="w-full">
+            <Button
+              type="submit"
+              form="forgot-password-form"
+              className="w-full"
+            >
               Send Code
             </Button>
             <div className="text-center text-sm text-muted-foreground">
-              Remember your password?{" "}
-              <Link href="/login" className="underline underline-offset-4 text-primary">
+              Remember your password?{' '}
+              <Link
+                href="/login"
+                className="underline underline-offset-4 text-primary"
+              >
                 Back to Login
               </Link>
             </div>
@@ -97,5 +108,5 @@ export default function ForgotPassword() {
         </Card>
       </div>
     </div>
-  )
+  );
 }
