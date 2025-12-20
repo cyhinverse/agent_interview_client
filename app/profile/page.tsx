@@ -1,13 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, Activity as ReactActivity, ViewTransition } from 'react';
 import { motion } from 'framer-motion';
 import {
   User,
   Settings,
   Shield,
   Trophy,
-  Activity,
+  Activity as ActivityIcon,
   Terminal,
   ChevronRight,
   Flame,
@@ -28,7 +28,7 @@ export default function ProfilePage() {
     {
       label: 'Success Rate',
       value: '94.2%',
-      icon: Activity,
+      icon: ActivityIcon,
       color: 'text-emerald-500',
     },
   ];
@@ -168,46 +168,66 @@ export default function ProfilePage() {
 
         {/* Tab Content */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-          {/* Main List */}
-          <div className="lg:col-span-2 space-y-6">
-            <h3 className="text-sm font-bold uppercase tracking-widest flex items-center gap-2">
-              <Activity className="w-4 h-4 text-primary" />
-              Protocol History
-            </h3>
+          <div className="lg:col-span-2">
+            <ViewTransition>
+              <ReactActivity
+                mode={activeTab === 'overview' ? 'visible' : 'hidden'}
+              >
+                <div className="space-y-6">
+                  <h3 className="text-sm font-bold uppercase tracking-widest flex items-center gap-2">
+                    <ActivityIcon className="w-4 h-4 text-primary" />
+                    Protocol History
+                  </h3>
 
-            <div className="bg-card border border-border rounded-2xl overflow-hidden shadow-sm">
-              <div className="divide-y divide-border">
-                {recentActivity.map((item, i) => (
-                  <div
-                    key={i}
-                    className="group p-5 flex items-center justify-between hover:bg-muted/30 transition-colors"
-                  >
-                    <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center">
-                        <Terminal className="w-4 h-4 text-muted-foreground/60" />
-                      </div>
-                      <div className="space-y-0.5">
-                        <div className="text-sm font-semibold group-hover:text-primary transition-colors">
-                          {item.title}
+                  <div className="bg-card border border-border rounded-2xl overflow-hidden shadow-sm">
+                    <div className="divide-y divide-border">
+                      {recentActivity.map((item, i) => (
+                        <div
+                          key={i}
+                          className="group p-5 flex items-center justify-between hover:bg-muted/30 transition-colors"
+                        >
+                          <div className="flex items-center gap-4">
+                            <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center">
+                              <Terminal className="w-4 h-4 text-muted-foreground/60" />
+                            </div>
+                            <div className="space-y-0.5">
+                              <div className="text-sm font-semibold group-hover:text-primary transition-colors">
+                                {item.title}
+                              </div>
+                              <div className="text-[10px] text-muted-foreground uppercase font-mono tracking-tighter">
+                                {item.status} • {item.date}
+                              </div>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-4">
+                            <span className="text-xs font-mono font-bold text-emerald-500">
+                              {item.points}
+                            </span>
+                            <ChevronRight className="w-4 h-4 text-muted-foreground/30" />
+                          </div>
                         </div>
-                        <div className="text-[10px] text-muted-foreground uppercase font-mono tracking-tighter">
-                          {item.status} • {item.date}
-                        </div>
-                      </div>
+                      ))}
                     </div>
-                    <div className="flex items-center gap-4">
-                      <span className="text-xs font-mono font-bold text-emerald-500">
-                        {item.points}
-                      </span>
-                      <ChevronRight className="w-4 h-4 text-muted-foreground/30" />
-                    </div>
+                    <button className="w-full py-4 text-[10px] font-bold uppercase tracking-widest text-muted-foreground hover:bg-muted/50 transition-colors border-t border-border">
+                      View Full Logs
+                    </button>
                   </div>
-                ))}
-              </div>
-              <button className="w-full py-4 text-[10px] font-bold uppercase tracking-widest text-muted-foreground hover:bg-muted/50 transition-colors border-t border-border">
-                View Full Logs
-              </button>
-            </div>
+                </div>
+              </ReactActivity>
+
+              <ReactActivity
+                mode={activeTab === 'history' ? 'visible' : 'hidden'}
+              >
+                <div className="space-y-6">
+                  <h3 className="text-sm font-bold uppercase tracking-widest">
+                    Detailed History
+                  </h3>
+                  <div className="p-10 border border-dashed border-border rounded-2xl text-center text-muted-foreground text-xs italic">
+                    Retrieving archive logs...
+                  </div>
+                </div>
+              </ReactActivity>
+            </ViewTransition>
           </div>
 
           {/* Sidebar / Achievements */}
