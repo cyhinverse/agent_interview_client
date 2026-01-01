@@ -17,94 +17,69 @@ export default function AISHowcaseCanvas() {
     let animationFrameId: number;
     const isDark = resolvedTheme === 'dark';
 
-    const colors = {
-      primary: '168, 85, 247',
-      secondary: '139, 92, 246',
-      accent: '192, 132, 252',
-      text: isDark ? '255, 255, 255' : '0, 0, 0',
-    };
+    // Minimal monochrome palette - only subtle violet tones
+    const accentColor = isDark ? '139, 92, 246' : '124, 58, 237'; // violet-500 / violet-600
+    const neutralColor = isDark ? '161, 161, 170' : '113, 113, 122'; // zinc-400 / zinc-500
 
     const resizeCanvas = () => {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
     };
 
-    // --- Waveform logic ---
-    const waves = Array.from({ length: 3 }, (_, i) => ({
+    // Subtle wave configuration
+    const waves = Array.from({ length: 2 }, (_, i) => ({
       y: 0,
-      length: 0.01 + i * 0.005,
-      amplitude: 20 + i * 15,
-      frequency: 0.02 + i * 0.01,
-      speed: 0.05 + i * 0.02,
+      length: 0.008 + i * 0.004,
+      amplitude: 15 + i * 10,
+      frequency: 0.015 + i * 0.008,
+      speed: 0.03 + i * 0.015,
       phase: Math.random() * 100,
     }));
 
-    // --- Floating Elements ---
+    // Floating Elements - simplified
     interface FloatingItem {
       x: number;
       y: number;
       vx: number;
       vy: number;
       size: number;
-      type: 'panel' | 'code' | 'point' | 'leet';
+      type: 'dot' | 'text';
       content?: string;
       opacity: number;
-      color: string;
+      isAccent: boolean;
     }
 
     let items: FloatingItem[] = [];
-    const leetContent = [
-      'Sliding Window',
-      'Two Pointers',
-      'Fast & Slow',
-      'BFS',
-      'DFS',
-      'Backtracking',
-      'Dynamic Programming',
-      'Greedy',
-      'Trie',
-      'Two Sum',
-      '3Sum',
-      'Add Two Numbers',
-      'Valid Parentheses',
-      'Merge Intervals',
-      'Top K Elements',
-      'Subsets',
-      'Binary Search',
-      'Tree Traversal',
-      'Graph Search',
-      'LRU Cache',
-      'Two Heaps',
-    ];
-
-    const randomColors = [
-      '147, 51, 234', // Rich Purple
-      '124, 58, 237', // Deep Violet
-      '219, 39, 119', // Vibrant Pink
-      '37, 99, 235', // Bold Blue
-      '5, 150, 105', // Vivid Emerald
-      '217, 119, 6', // Warm Orange
-      '220, 38, 38', // Strong Red
+    const keywords = [
+      'AI Agent',
+      'LLM',
+      'RAG',
+      'Chain',
+      'Prompt',
+      'Vector',
+      'Embedding',
+      'Context',
+      'Memory',
+      'Tool Use',
+      'Function',
+      'Reasoning',
     ];
 
     const initItems = () => {
       items = [];
-      for (let i = 0; i < 35; i++) {
+      // Create floating dots and text elements
+      for (let i = 0; i < 25; i++) {
+        const isText = Math.random() > 0.6;
         items.push({
           x: Math.random() * canvas.width,
           y: Math.random() * canvas.height,
-          vx: (Math.random() - 0.5) * 1.2,
-          vy: (Math.random() - 0.5) * 1.2,
-          size: Math.random() * 80 + 40,
-          type:
-            Math.random() > 0.85
-              ? 'panel'
-              : Math.random() > 0.2
-              ? 'leet'
-              : 'point',
-          content: leetContent[Math.floor(Math.random() * leetContent.length)],
-          opacity: Math.random() * 0.4 + 0.5, // Increased base opacity (0.5 to 0.9)
-          color: randomColors[Math.floor(Math.random() * randomColors.length)],
+          vx: (Math.random() - 0.5) * 0.6,
+          vy: (Math.random() - 0.5) * 0.6,
+          size: isText ? 14 : Math.random() * 3 + 2,
+          type: isText ? 'text' : 'dot',
+          content: keywords[Math.floor(Math.random() * keywords.length)],
+          opacity: Math.random() * 0.15 + 0.08, // Very subtle: 0.08 - 0.23
+          isAccent: Math.random() > 0.7, // 30% chance to be accent colored
         });
       }
     };
@@ -120,17 +95,18 @@ export default function AISHowcaseCanvas() {
 
     const drawWave = (wave: Wave, index: number, time: number) => {
       ctx.beginPath();
-      ctx.moveTo(0, canvas.height * 0.8);
+      ctx.moveTo(0, canvas.height * 0.85);
 
       for (let i = 0; i < canvas.width; i++) {
         const offset =
           Math.sin(i * wave.length + wave.phase + time * wave.speed) *
           wave.amplitude;
-        ctx.lineTo(i, canvas.height * 0.8 + offset);
+        ctx.lineTo(i, canvas.height * 0.85 + offset);
       }
 
-      ctx.strokeStyle = `rgba(168, 85, 247, ${0.4 - index * 0.08})`; // Even brighter waves
-      ctx.lineWidth = 4;
+      // Subtle wave with low opacity
+      ctx.strokeStyle = `rgba(${accentColor}, ${0.08 - index * 0.03})`;
+      ctx.lineWidth = 1.5;
       ctx.stroke();
     };
 
@@ -139,14 +115,29 @@ export default function AISHowcaseCanvas() {
 
       const timeSec = time / 1000;
 
-      // 1. Draw Waves
+      // 1. Draw subtle gradient overlay
+      const grad = ctx.createRadialGradient(
+        canvas.width * 0.8,
+        canvas.height * 0.2,
+        0,
+        canvas.width * 0.8,
+        canvas.height * 0.2,
+        canvas.width * 0.6
+      );
+      grad.addColorStop(0, `rgba(${accentColor}, 0.03)`);
+      grad.addColorStop(1, 'transparent');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // 2. Draw Waves
       waves.forEach((w, i) => drawWave(w, i, timeSec));
 
-      // 2. Draw Items
+      // 3. Draw floating items
       items.forEach((item) => {
         item.x += item.vx;
         item.y += item.vy;
 
+        // Wrap around edges
         if (item.x < -100) item.x = canvas.width + 100;
         if (item.x > canvas.width + 100) item.x = -100;
         if (item.y < -100) item.y = canvas.height + 100;
@@ -154,53 +145,22 @@ export default function AISHowcaseCanvas() {
 
         ctx.save();
         ctx.translate(item.x, item.y);
-        ctx.globalAlpha = item.opacity;
+        ctx.globalAlpha = item.opacity * 0.4; // Reduced opacity by 60%
 
-        if (item.type === 'panel') {
-          // Glass panel - making it more premium
-          ctx.beginPath();
-          ctx.roundRect(0, 0, item.size, item.size * 0.6, 12);
-          ctx.fillStyle = `rgba(${item.color}, 0.25)`; // Increased opacity
-          ctx.fill();
-          ctx.strokeStyle = `rgba(${item.color}, 0.6)`; // Sharper, more visible border
-          ctx.lineWidth = 2.5;
-          ctx.stroke();
+        const color = item.isAccent ? accentColor : neutralColor;
 
-          ctx.beginPath();
-          ctx.moveTo(10, 20);
-          ctx.lineTo(item.size - 10, 20);
-          ctx.strokeStyle = `rgba(${item.color}, 0.4)`;
-          ctx.stroke();
-        } else if (item.type === 'leet') {
-          ctx.font = 'bold 16px sans-serif'; // Slightly larger
-          ctx.fillStyle = `rgb(${item.color})`;
-          ctx.shadowBlur = 25; // Much stronger glow
-          ctx.shadowColor = `rgba(${item.color}, 0.9)`;
+        if (item.type === 'text') {
+          ctx.font = `500 ${item.size}px system-ui, -apple-system, sans-serif`;
+          ctx.fillStyle = `rgb(${color})`;
           ctx.fillText(item.content || '', 0, 0);
         } else {
           ctx.beginPath();
-          ctx.arc(0, 0, 3.5, 0, Math.PI * 2); // Larger points
-          ctx.fillStyle = `rgb(${item.color})`;
-          ctx.shadowBlur = 30;
-          ctx.shadowColor = `rgb(${item.color})`;
+          ctx.arc(0, 0, item.size, 0, Math.PI * 2);
+          ctx.fillStyle = `rgb(${color})`;
           ctx.fill();
         }
         ctx.restore();
       });
-
-      // 3. Cinematic Gradients (Corners) - More intense
-      const grad = ctx.createRadialGradient(
-        canvas.width,
-        0,
-        0,
-        canvas.width,
-        0,
-        canvas.width
-      );
-      grad.addColorStop(0, `rgba(${colors.primary}, 0.15)`); // Increased density
-      grad.addColorStop(1, 'transparent');
-      ctx.fillStyle = grad;
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
 
       animationFrameId = requestAnimationFrame(draw);
     };
@@ -217,9 +177,6 @@ export default function AISHowcaseCanvas() {
   }, [resolvedTheme]);
 
   return (
-    <canvas
-      ref={canvasRef}
-      className="fixed inset-0 z-0 pointer-events-none opacity-100" // Increased opacity and moved to z-0
-    />
+    <canvas ref={canvasRef} className="fixed inset-0 z-0 pointer-events-none" />
   );
 }

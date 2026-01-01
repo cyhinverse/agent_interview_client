@@ -1,13 +1,13 @@
-"use client"
+'use client';
 
-import * as React from "react"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { Controller, useForm } from "react-hook-form"
-import { toast } from "sonner"
-import * as z from "zod"
-import Link from "next/link"
+import * as React from 'react';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Controller, useForm } from 'react-hook-form';
+import { toast } from 'sonner';
+import * as z from 'zod';
+import Link from 'next/link';
 
-import { Button } from "@/components/ui/button"
+import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
@@ -15,46 +15,46 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card"
+} from '@/components/ui/card';
 import {
   Field,
   FieldError,
   FieldGroup,
   FieldLabel,
-} from "@/components/ui/field"
-import { Input } from "@/components/ui/input"
+} from '@/components/ui/field';
+import { Input } from '@/components/ui/input';
 
 const formSchema = z
   .object({
-    name: z.string().min(2, "Name must be at least 2 characters."),
-    email: z.string().email("Please enter a valid email address."),
-    password: z.string().min(8, "Password must be at least 8 characters."),
+    name: z.string().min(2, 'Name must be at least 2 characters.'),
+    email: z.string().email('Please enter a valid email address.'),
+    password: z.string().min(8, 'Password must be at least 8 characters.'),
     confirmPassword: z.string(),
   })
   .refine((data) => data.password === data.confirmPassword, {
-    message: "Passwords do not match",
-    path: ["confirmPassword"],
-  })
+    message: 'Passwords do not match',
+    path: ['confirmPassword'],
+  });
 
 export default function Register() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: "",
-      email: "",
-      password: "",
-      confirmPassword: "",
+      name: '',
+      email: '',
+      password: '',
+      confirmPassword: '',
     },
-  })
+  });
 
   function onSubmit(data: z.infer<typeof formSchema>) {
-    toast("Registration Attempt", {
+    toast('Registration Attempt', {
       description: (
         <pre className="bg-code text-code-foreground mt-2 w-[320px] overflow-x-auto rounded-md p-4">
           <code>{JSON.stringify(data, null, 2)}</code>
         </pre>
       ),
-    })
+    });
   }
 
   return (
@@ -63,9 +63,7 @@ export default function Register() {
         <Card>
           <CardHeader>
             <CardTitle className="text-2xl">Sign Up</CardTitle>
-            <CardDescription>
-              Create an account to get started.
-            </CardDescription>
+            <CardDescription>Create an account to get started.</CardDescription>
           </CardHeader>
           <CardContent>
             <form id="register-form" onSubmit={form.handleSubmit(onSubmit)}>
@@ -80,7 +78,9 @@ export default function Register() {
                         {...field}
                         id="name"
                         placeholder="John Doe"
-                        className={fieldState.invalid ? "border-destructive" : ""}
+                        className={
+                          fieldState.invalid ? 'border-destructive' : ''
+                        }
                       />
                       {fieldState.invalid && (
                         <FieldError errors={[fieldState.error]} />
@@ -99,7 +99,9 @@ export default function Register() {
                         id="email"
                         type="email"
                         placeholder="m@example.com"
-                        className={fieldState.invalid ? "border-destructive" : ""}
+                        className={
+                          fieldState.invalid ? 'border-destructive' : ''
+                        }
                       />
                       {fieldState.invalid && (
                         <FieldError errors={[fieldState.error]} />
@@ -117,7 +119,10 @@ export default function Register() {
                         {...field}
                         id="password"
                         type="password"
-                        className={fieldState.invalid ? "border-destructive" : ""}
+                        placeholder="Enter your password"
+                        className={
+                          fieldState.invalid ? 'border-destructive' : ''
+                        }
                       />
                       {fieldState.invalid && (
                         <FieldError errors={[fieldState.error]} />
@@ -130,12 +135,17 @@ export default function Register() {
                   control={form.control}
                   render={({ field, fieldState }) => (
                     <Field data-invalid={fieldState.invalid}>
-                      <FieldLabel htmlFor="confirmPassword">Confirm Password</FieldLabel>
+                      <FieldLabel htmlFor="confirmPassword">
+                        Confirm Password
+                      </FieldLabel>
                       <Input
                         {...field}
                         id="confirmPassword"
                         type="password"
-                        className={fieldState.invalid ? "border-destructive" : ""}
+                        placeholder="Enter your password again"
+                        className={
+                          fieldState.invalid ? 'border-destructive' : ''
+                        }
                       />
                       {fieldState.invalid && (
                         <FieldError errors={[fieldState.error]} />
@@ -151,8 +161,11 @@ export default function Register() {
               Sign Up
             </Button>
             <div className="text-center text-sm text-muted-foreground">
-              Already have an account?{" "}
-              <Link href="/login" className="underline underline-offset-4 text-primary">
+              Already have an account?{' '}
+              <Link
+                href="/login"
+                className="underline underline-offset-4 text-primary"
+              >
                 Login
               </Link>
             </div>
@@ -160,5 +173,5 @@ export default function Register() {
         </Card>
       </div>
     </div>
-  )
+  );
 }

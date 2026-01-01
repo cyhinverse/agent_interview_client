@@ -100,6 +100,7 @@ export default function Login() {
                         {...field}
                         id="password"
                         type="password"
+                        placeholder="Enter your password"
                         className={
                           fieldState.invalid ? 'border-destructive' : ''
                         }
