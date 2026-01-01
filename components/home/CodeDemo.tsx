@@ -45,7 +45,7 @@ export default function CodeDemo({ isInView }: { isInView: boolean }) {
           clearInterval(interval);
           setTimeout(() => setStatus('running'), 500);
         }
-      }, 20);
+      }, 40);
       return () => clearInterval(interval);
     }
   }, [status]);

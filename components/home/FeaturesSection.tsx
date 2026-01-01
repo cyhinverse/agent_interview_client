@@ -56,8 +56,8 @@ function FeatureBlock({
       <motion.div
         initial={{ opacity: 0, y: 40 }}
         animate={isInView ? { opacity: 1, y: 0 } : {}}
-        transition={{ duration: 0.8, ease: [0.2, 0.65, 0.3, 0.9] }} // Google Ease
-        className={`lg:col-span-5 flex flex-col justify-center ${
+        transition={{ duration: 0.6, ease: 'easeOut' }}
+        className={`lg:col-span-5 flex flex-col justify-center will-change-transform ${
           align === 'left' ? 'lg:order-2 lg:pl-10' : 'lg:pr-10'
         }`}
       >
@@ -85,10 +85,10 @@ function FeatureBlock({
 
       {/* Visual Side */}
       <motion.div
-        initial={{ opacity: 0, scale: 0.95, y: 40 }}
+        initial={{ opacity: 0, scale: 0.98, y: 20 }}
         animate={isInView ? { opacity: 1, scale: 1, y: 0 } : {}}
-        transition={{ duration: 0.8, delay: 0.2, ease: [0.2, 0.65, 0.3, 0.9] }}
-        className={`lg:col-span-7 w-full ${
+        transition={{ duration: 0.6, delay: 0.1, ease: 'easeOut' }}
+        className={`lg:col-span-7 w-full will-change-transform ${
           align === 'left' ? 'lg:order-1' : ''
         }`}
       >

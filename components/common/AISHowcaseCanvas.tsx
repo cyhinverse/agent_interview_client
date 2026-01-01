@@ -110,10 +110,23 @@ export default function AISHowcaseCanvas() {
       ctx.stroke();
     };
 
+    let lastTime = 0;
+    const fpsInterval = 1000 / 30; // Cap at 30 FPS for performance
+
     const draw = (time: number) => {
+      animationFrameId = requestAnimationFrame(draw);
+
+      const elapsed = time - lastTime;
+      if (elapsed < fpsInterval) return;
+
+      lastTime = time - (elapsed % fpsInterval);
+
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+      // ... drawing logic continues ...
       const timeSec = time / 1000;
+
+      // ... rest of draw function ...
 
       // 1. Draw subtle gradient overlay
       const grad = ctx.createRadialGradient(
@@ -162,7 +175,7 @@ export default function AISHowcaseCanvas() {
         ctx.restore();
       });
 
-      animationFrameId = requestAnimationFrame(draw);
+      // Loop moved to top
     };
 
     window.addEventListener('resize', resizeCanvas);

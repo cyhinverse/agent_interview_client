@@ -2,10 +2,11 @@ import { ViewTransition } from 'react';
 import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
-import { ThemeProvider } from 'next-themes';
 import Header from '@/components/Layout/Header';
 import Footer from '@/components/Layout/Footer';
 import AISHowcaseCanvas from '@/components/common/AISHowcaseCanvas';
+import { Providers } from './providers';
+import { Toaster } from '@/components/ui/sonner';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -33,7 +34,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         suppressHydrationWarning
       >
-        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
+        <Providers>
           <AISHowcaseCanvas />
           <div className="relative z-10 flex min-h-screen flex-col">
             <Header />
@@ -42,7 +43,8 @@ export default function RootLayout({
             </main>
             <Footer />
           </div>
-        </ThemeProvider>
+          <Toaster />
+        </Providers>
       </body>
     </html>
   );

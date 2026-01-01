@@ -1,32 +1,37 @@
-"use client"
+'use client';
 
-import { useState, useEffect } from "react"
-import { Button } from "../ui/button"
-import { Moon, Sun } from "lucide-react"
-import { useTheme } from "next-themes"
-import Link from "next/link"
-import { usePathname } from "next/navigation"
-import { cn } from "@/lib/utils"
+import { useState, useEffect } from 'react';
+import { Button } from '../ui/button';
+import { Moon, Sun } from 'lucide-react';
+import { useTheme } from 'next-themes';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { cn } from '@/lib/utils';
+
+import { useSelector } from 'react-redux';
+import { RootState } from '@/store/store';
 
 export default function Header() {
-  const { theme, setTheme } = useTheme()
-  const pathname = usePathname()
-  const [mounted, setMounted] = useState(false)
+  const { theme, setTheme } = useTheme();
+  const pathname = usePathname();
+  const [mounted, setMounted] = useState(false);
+
+  const user = useSelector((state: RootState) => state.auth.user);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    setMounted(true)
-  }, [])
+    setMounted(true);
+  }, []);
 
   const toggleTheme = () => {
-    setTheme(theme === "dark" ? "light" : "dark")
-  }
+    setTheme(theme === 'dark' ? 'light' : 'dark');
+  };
 
   const navLinks = [
-    { name: "Interview", href: "/interview" },
-    { name: "Problems", href: "/problems" },
-    { name: "Pricing", href: "/pricing" },
-  ]
+    { name: 'Interview', href: '/interview' },
+    { name: 'Problems', href: '/problems' },
+    { name: 'Pricing', href: '/pricing' },
+  ];
 
   return (
     <div className="fixed top-6 left-0 right-0 z-50 flex justify-center px-4">
@@ -53,19 +58,19 @@ export default function Header() {
             𝕬𝖌𝖊𝖓𝖙 𝕴𝖓𝖙𝖊𝖗𝖛𝖎𝖊𝖜
           </h1>
         </Link>
-        
+
         {/* Nav links */}
         <div className="hidden md:flex items-center gap-1">
           {navLinks.map((link) => {
-            const isActive = pathname === link.href
+            const isActive = pathname === link.href;
             return (
               <Link
                 key={link.href}
                 href={link.href}
                 className={cn(
-                  "relative px-4 py-2 text-sm font-medium transition-colors",
-                  "hover:text-primary",
-                  isActive ? "text-primary" : "text-muted-foreground"
+                  'relative px-4 py-2 text-sm font-medium transition-colors',
+                  'hover:text-primary',
+                  isActive ? 'text-primary' : 'text-muted-foreground'
                 )}
               >
                 {link.name}
@@ -73,7 +78,7 @@ export default function Header() {
                   <span className="absolute bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-primary" />
                 )}
               </Link>
-            )
+            );
           })}
         </div>
 
@@ -95,18 +100,18 @@ export default function Header() {
                 <>
                   <Sun
                     className={cn(
-                      "absolute inset-0 transition-all duration-500",
-                      theme === "dark"
-                        ? "rotate-90 scale-0 opacity-0"
-                        : "rotate-0 scale-100 opacity-100"
+                      'absolute inset-0 transition-all duration-500',
+                      theme === 'dark'
+                        ? 'rotate-90 scale-0 opacity-0'
+                        : 'rotate-0 scale-100 opacity-100'
                     )}
                   />
                   <Moon
                     className={cn(
-                      "absolute inset-0 transition-all duration-500",
-                      theme === "dark"
-                        ? "rotate-0 scale-100 opacity-100"
-                        : "-rotate-90 scale-0 opacity-0"
+                      'absolute inset-0 transition-all duration-500',
+                      theme === 'dark'
+                        ? 'rotate-0 scale-100 opacity-100'
+                        : '-rotate-90 scale-0 opacity-0'
                     )}
                   />
                 </>
@@ -117,10 +122,20 @@ export default function Header() {
 
           <div className="h-6 w-px bg-white/30 dark:bg-white/10" />
 
-          {/* Login */}
-          <Button
-            asChild
-            className="
+          {/* Login/User */}
+          {user ? (
+            <div className="flex items-center gap-3">
+              <span className="text-sm font-medium text-muted-foreground">
+                Hello,
+              </span>
+              <span className="text-sm font-medium text-primary">
+                {user.user.fullName.split(' ')[1]}
+              </span>
+            </div>
+          ) : (
+            <Button
+              asChild
+              className="
               rounded-xl px-6
               bg-primary text-primary-foreground
               hover:opacity-90
@@ -128,11 +143,12 @@ export default function Header() {
               active:scale-95
               transition-all
             "
-          >
-            <Link href="/login">Login</Link>
-          </Button>
+            >
+              <Link href="/login">Login</Link>
+            </Button>
+          )}
         </div>
       </nav>
     </div>
-  )
+  );
 }

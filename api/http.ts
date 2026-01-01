@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const instance = axios.create({
-  baseURL: 'http://localhost:3000/api',
+  baseURL: 'http://localhost:8000/',
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
@@ -10,10 +10,18 @@ const instance = axios.create({
 
 instance.interceptors.response.use(
   (response) => response,
-  (error) => {}
+  (error) => {
+    console.log(error);
+    return Promise.reject(error);
+  }
 );
 
 instance.interceptors.request.use(
   (config) => config,
-  (error) => {}
+  (error) => {
+    console.log(error);
+    return Promise.reject(error);
+  }
 );
+
+export default instance;
