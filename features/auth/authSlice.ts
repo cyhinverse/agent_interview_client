@@ -1,7 +1,23 @@
 import { createSlice } from '@reduxjs/toolkit';
 import { login, register } from './authAction';
 
-const initialState = {
+interface User {
+  fullName: string;
+  email: string;
+  _id?: string;
+}
+
+interface AuthPayload {
+  user: User;
+  token?: string;
+}
+
+interface AuthState {
+  isLoading: boolean;
+  user: AuthPayload | null;
+}
+
+const initialState: AuthState = {
   isLoading: false,
   user: null,
 };
