@@ -37,7 +37,7 @@ export default function InterviewDemo({ isInView }: { isInView: boolean }) {
       },
     ];
 
-    let timeouts: NodeJS.Timeout[] = [];
+    const timeouts: NodeJS.Timeout[] = [];
 
     // Reset
     setTranscript([]);

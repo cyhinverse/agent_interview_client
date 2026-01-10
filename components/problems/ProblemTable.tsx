@@ -5,6 +5,7 @@ import { Terminal } from 'lucide-react';
 import Link from 'next/link';
 
 interface Problem {
+  id: string;
   title: string;
   category: string;
   difficulty: 'High' | 'Medium' | 'Low' | string;
@@ -45,12 +46,12 @@ export function ProblemTable({ problems }: ProblemTableProps) {
             {problems.length > 0 ? (
               problems.map((prob, i) => (
                 <tr
-                  key={i}
+                  key={prob.id}
                   className="group hover:bg-muted/30 transition-colors"
                 >
                   <td className="px-6 py-5">
                     <Link
-                      href={`/problems/${i}`}
+                      href={`/problems/${prob.id}`}
                       className="flex items-center gap-3"
                     >
                       <Terminal className="w-3.5 h-3.5 text-muted-foreground/40 group-hover:text-primary transition-colors" />

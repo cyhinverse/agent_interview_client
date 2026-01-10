@@ -124,14 +124,17 @@ export default function Header() {
 
           {/* Login/User */}
           {user ? (
-            <div className="flex items-center gap-3">
-              <span className="text-sm font-medium text-muted-foreground">
+            <Link
+              href="/profile"
+              className="flex items-center gap-3 hover:opacity-80 transition-all group"
+            >
+              <span className="text-sm font-medium text-muted-foreground group-hover:text-primary/80 transition-colors">
                 Hello,
               </span>
-              <span className="text-sm font-medium text-primary">
-                {user.user.fullName.split(' ')[1]}
+              <span className="text-sm font-medium text-primary group-hover:underline underline-offset-4">
+                {user.fullName || 'User'}
               </span>
-            </div>
+            </Link>
           ) : (
             <Button
               asChild

@@ -1,11 +1,16 @@
 'use client';
 
+import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Shield, Zap, Cpu } from 'lucide-react';
+import { Shield, Zap, Cpu, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { interviewCategoriesAPI } from '@/features/interview/interviewApi';
+import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 
 interface Agent {
+  id: string;
   name: string;
   type: string;
   desc: string;
@@ -18,7 +23,28 @@ interface AgentCardProps {
 }
 
 export function AgentCard({ agent, index }: AgentCardProps) {
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
   const Icon = index === 0 ? Cpu : index === 1 ? Shield : Zap;
+
+  const handleStartInterview = async () => {
+    try {
+      setLoading(true);
+      const session = await interviewCategoriesAPI.createInterviewSession({
+        categoryId: agent.id,
+      });
+
+      toast.success('Interview session created successfully!');
+
+      // 重定向到面试会话页面
+      router.push(`/interview/session/${session.id}`);
+    } catch (error) {
+      console.error('Failed to start interview:', error);
+      toast.error('Failed to start interview. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <motion.div
@@ -56,8 +82,16 @@ export function AgentCard({ agent, index }: AgentCardProps) {
                 {agent.complexity}
               </span>
             </div>
-            <Button className="w-full font-bold uppercase tracking-widest text-[10px] py-6 rounded-xl shadow-sm hover:translate-y-[-2px] transition-all">
-              Start Mission
+            <Button
+              onClick={handleStartInterview}
+              disabled={loading}
+              className="w-full font-bold uppercase tracking-widest text-[10px] py-6 rounded-xl shadow-sm hover:translate-y-[-2px] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {loading ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                'Start Mission'
+              )}
             </Button>
           </div>
         </CardContent>

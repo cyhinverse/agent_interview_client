@@ -1,9 +1,7 @@
-import { ViewTransition } from 'react';
 import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
-import Header from '@/components/Layout/Header';
-import Footer from '@/components/Layout/Footer';
+import LayoutWrapper from '@/components/Layout/LayoutWrapper';
 import AISHowcaseCanvas from '@/components/common/AISHowcaseCanvas';
 import { Providers } from './providers';
 import { Toaster } from '@/components/ui/sonner';
@@ -37,11 +35,7 @@ export default function RootLayout({
         <Providers>
           <AISHowcaseCanvas />
           <div className="relative z-10 flex min-h-screen flex-col">
-            <Header />
-            <main className="flex-1 pt-24 text-foreground">
-              <ViewTransition>{children}</ViewTransition>
-            </main>
-            <Footer />
+            <LayoutWrapper>{children}</LayoutWrapper>
           </div>
           <Toaster />
         </Providers>

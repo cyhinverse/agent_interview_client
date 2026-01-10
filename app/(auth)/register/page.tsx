@@ -22,10 +22,8 @@ import {
   FieldLabel,
 } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
-import { AppDispatch } from '@/store/store';
-import { useDispatch } from 'react-redux';
-import { register } from '@/features/auth/authAction';
 import { useRouter } from 'next/navigation';
+import { useRegister } from '@/hooks/useAuth';
 
 const formSchema = z
   .object({
@@ -40,8 +38,8 @@ const formSchema = z
   });
 
 export default function Register() {
-  const dispatch = useDispatch<AppDispatch>();
   const navigator = useRouter();
+  const { mutate: register, isPending } = useRegister();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -53,16 +51,11 @@ export default function Register() {
   });
 
   function onSubmit(data: z.infer<typeof formSchema>) {
-    dispatch(register(data))
-      .unwrap()
-      .then(() => {
-        toast.success('Registration successful');
+    register(data, {
+      onSuccess: () => {
         navigator.push('/login');
-      })
-      .catch((error) => {
-        toast.error('Registration failed');
-        console.error(error);
-      });
+      },
+    });
   }
 
   return (
@@ -165,8 +158,13 @@ export default function Register() {
             </form>
           </CardContent>
           <CardFooter className="flex flex-col gap-4">
-            <Button type="submit" form="register-form" className="w-full">
-              Sign Up
+            <Button 
+              type="submit" 
+              form="register-form" 
+              className="w-full"
+              disabled={isPending}
+            >
+              {isPending ? 'Creating account...' : 'Sign Up'}
             </Button>
             <div className="text-center text-sm text-muted-foreground">
               Already have an account?{' '}
