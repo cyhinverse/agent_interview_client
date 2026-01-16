@@ -12,9 +12,20 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Pagination } from '@/components/ui/Pagination';
-import { useAdminResponses, useDeleteResponse } from '@/hooks/useAdmin';
+import { useAdminResponses, useAdminDeleteResponse } from '@/hooks/useAdmin';
+import { QuestionResponse } from '@/features/questions/questionsApi';
 import { Loader2 } from 'lucide-react';
-import { toast } from 'sonner';
+import { cn } from '@/lib/utils';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 export default function ResponsesPage() {
   const [currentPage, setCurrentPage] = useState(1);
@@ -26,7 +37,7 @@ export default function ResponsesPage() {
     isLoading,
     refetch,
   } = useAdminResponses(skip, pageSize);
-  const { mutate: deleteResponse } = useDeleteResponse();
+  const { mutate: deleteResponse } = useAdminDeleteResponse();
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
@@ -41,7 +52,6 @@ export default function ResponsesPage() {
     if (!confirm('Are you sure you want to delete this response?')) return;
     try {
       await deleteResponse(responseId);
-      toast.success('Response deleted successfully');
       refetch();
     } catch (error) {
       console.error('Failed to delete response:', error);
@@ -51,12 +61,6 @@ export default function ResponsesPage() {
   const totalItems = responses?.length || 0;
   const hasMore = totalItems === pageSize;
   const estimatedTotalPages = hasMore ? currentPage + 1 : currentPage;
-
-  const getScoreBadge = (score: number) => {
-    if (score >= 80) return 'bg-emerald-500/20 text-emerald-500';
-    if (score >= 60) return 'bg-yellow-500/20 text-yellow-500';
-    return 'bg-red-500/20 text-red-500';
-  };
 
   const truncateText = (text: string, maxLength: number = 100) => {
     if (!text) return '';
@@ -116,78 +120,80 @@ export default function ResponsesPage() {
 
       {/* Table */}
       <div className="border border-border rounded-xl overflow-hidden bg-card">
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-border bg-muted/50 text-xs uppercase tracking-widest text-muted-foreground/60 font-mono">
-                <th className="px-6 py-4 font-normal text-left">Question</th>
-                <th className="px-6 py-4 font-normal text-left">Answer</th>
-                <th className="px-6 py-4 font-normal text-left">Score</th>
-                <th className="px-6 py-4 font-normal text-left">Session</th>
-                <th className="px-6 py-4 font-normal text-left">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border/50">
-              {responses?.map((response: any) => (
-                <tr
-                  key={response.id}
-                  className="hover:bg-muted/30 transition-colors"
-                >
-                  <td className="px-6 py-4">
-                    <div className="flex items-start gap-3">
-                      <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center mt-1">
-                        <FileText className="w-4 h-4 text-muted-foreground" />
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Question</TableHead>
+              <TableHead>Answer</TableHead>
+              <TableHead>Score</TableHead>
+              <TableHead>Session</TableHead>
+              <TableHead className="w-[100px]">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {responses?.map((response: QuestionResponse) => (
+              <TableRow key={response.id}>
+                <TableCell>
+                  <div className="flex items-start gap-3">
+                    <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center mt-1">
+                      <FileText className="w-4 h-4 text-muted-foreground" />
+                    </div>
+                    <div className="space-y-1">
+                      <div className="font-medium text-sm">
+                        {truncateText(response.questionText || 'Unknown', 60)}
                       </div>
-                      <div className="space-y-1">
-                        <div className="font-medium text-sm">
-                          {truncateText(
-                            response.question?.questionText || 'Unknown',
-                            60
-                          )}
-                        </div>
-                        <div className="text-xs text-muted-foreground">
-                          {response.question?.category?.name || 'Uncategorized'}
-                        </div>
+                      <div className="text-xs text-muted-foreground">
+                        {response.category?.name || 'Uncategorized'}
                       </div>
                     </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="text-sm text-muted-foreground max-w-xs">
-                      {truncateText(response.answer || '', 80)}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <span
-                      className={`px-3 py-1 rounded-full text-sm font-bold ${getScoreBadge(
-                        response.score || 0
-                      )}`}
-                    >
-                      {response.score || 0}%
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <div className="text-sm text-muted-foreground max-w-xs">
+                    {truncateText(response.answer || '', 80)}
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <Badge
+                    variant="outline"
+                    className={cn(
+                      'font-bold',
+                      (response.score || 0) >= 80
+                        ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20'
+                        : (response.score || 0) >= 60
+                        ? 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20'
+                        : 'bg-red-500/10 text-red-500 border-red-500/20'
+                    )}
+                  >
+                    {response.score || 0}%
+                  </Badge>
+                </TableCell>
+                <TableCell>
+                  <div className="flex items-center gap-2">
+                    <Avatar className="h-6 w-6">
+                      <AvatarFallback className="text-[10px]">
+                        {response.session?.user?.fullName?.charAt(0) || 'U'}
+                      </AvatarFallback>
+                    </Avatar>
+                    <span className="text-sm">
+                      {response.session?.user?.fullName || 'Unknown'}
                     </span>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-2 text-sm">
-                      <User className="w-3 h-3 text-muted-foreground" />
-                      <span>
-                        {response.session?.user?.fullName || 'Unknown'}
-                      </span>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-8 w-8 p-0 text-destructive hover:text-destructive"
-                      onClick={() => handleDelete(response.id)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 text-destructive hover:text-destructive"
+                    onClick={() => handleDelete(response.id)}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
 
         {(!responses || responses.length === 0) && (
           <div className="p-8 text-center text-muted-foreground">

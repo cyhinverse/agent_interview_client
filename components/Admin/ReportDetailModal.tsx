@@ -36,12 +36,12 @@ export function ReportDetailModal({
     });
   };
 
-  const getScoreVariant = (
-    score: number
-  ): 'default' | 'secondary' | 'destructive' => {
-    if (score >= 80) return 'default';
-    if (score >= 60) return 'secondary';
-    return 'destructive';
+  const getScoreClass = (score: number) => {
+    if (score >= 80)
+      return 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20';
+    if (score >= 60)
+      return 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20';
+    return 'bg-red-500/10 text-red-500 border-red-500/20';
   };
 
   return (
@@ -69,8 +69,10 @@ export function ReportDetailModal({
                 Overall Score
               </div>
               <Badge
-                variant={getScoreVariant(report.overallScore)}
-                className="text-3xl px-6 py-2"
+                variant="outline"
+                className={`text-3xl px-6 py-2 font-bold ${getScoreClass(
+                  report.overallScore
+                )}`}
               >
                 {report.overallScore}%
               </Badge>
@@ -82,7 +84,12 @@ export function ReportDetailModal({
                 <div className="text-xs text-muted-foreground mb-1">
                   Technical
                 </div>
-                <Badge variant={getScoreVariant(report.technicalScore)}>
+                <Badge
+                  variant="outline"
+                  className={`font-bold ${getScoreClass(
+                    report.technicalScore
+                  )}`}
+                >
                   {report.technicalScore}%
                 </Badge>
               </div>
@@ -90,7 +97,12 @@ export function ReportDetailModal({
                 <div className="text-xs text-muted-foreground mb-1">
                   Communication
                 </div>
-                <Badge variant={getScoreVariant(report.communicationScore)}>
+                <Badge
+                  variant="outline"
+                  className={`font-bold ${getScoreClass(
+                    report.communicationScore
+                  )}`}
+                >
                   {report.communicationScore}%
                 </Badge>
               </div>
@@ -98,7 +110,12 @@ export function ReportDetailModal({
                 <div className="text-xs text-muted-foreground mb-1">
                   Problem Solving
                 </div>
-                <Badge variant={getScoreVariant(report.problemSolvingScore)}>
+                <Badge
+                  variant="outline"
+                  className={`font-bold ${getScoreClass(
+                    report.problemSolvingScore
+                  )}`}
+                >
                   {report.problemSolvingScore}%
                 </Badge>
               </div>

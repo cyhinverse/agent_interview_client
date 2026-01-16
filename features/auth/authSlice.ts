@@ -1,12 +1,12 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { User } from '@/features/users/usersApi';
 
+// Auth state now only contains essential data
+// Loading and error states are managed by React Query
 interface AuthState {
   user: User | null;
   token: string | null;
   refreshToken: string | null;
-  isLoading: boolean;
-  error: string | null;
 }
 
 const getInitialToken = () => {
@@ -27,8 +27,6 @@ const initialState: AuthState = {
   user: null,
   token: getInitialToken(),
   refreshToken: getInitialRefreshToken(),
-  isLoading: false,
-  error: null,
 };
 
 const authSlice = createSlice({
@@ -38,13 +36,15 @@ const authSlice = createSlice({
     setCredentials: (
       state,
       action: PayloadAction<{
-        user: User;
+        user?: User;
         accessToken: string;
         refreshToken?: string;
       }>
     ) => {
       const { user, accessToken, refreshToken } = action.payload;
-      state.user = user;
+      if (user) {
+        state.user = user;
+      }
       state.token = accessToken;
       if (refreshToken) {
         state.refreshToken = refreshToken;
@@ -62,22 +62,12 @@ const authSlice = createSlice({
       state.user = null;
       state.token = null;
       state.refreshToken = null;
-      state.error = null;
 
       // Clear tokens from localStorage (browser only)
       if (typeof window !== 'undefined') {
         localStorage.removeItem('token');
         localStorage.removeItem('refreshToken');
       }
-    },
-    setLoading: (state, action: PayloadAction<boolean>) => {
-      state.isLoading = action.payload;
-    },
-    setError: (state, action: PayloadAction<string | null>) => {
-      state.error = action.payload;
-    },
-    clearError: (state) => {
-      state.error = null;
     },
     updateUser: (state, action: PayloadAction<Partial<User>>) => {
       if (state.user) {
@@ -87,13 +77,6 @@ const authSlice = createSlice({
   },
 });
 
-export const {
-  setCredentials,
-  logout,
-  setLoading,
-  setError,
-  clearError,
-  updateUser,
-} = authSlice.actions;
+export const { setCredentials, logout, updateUser } = authSlice.actions;
 
 export default authSlice.reducer;

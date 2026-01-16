@@ -3,35 +3,34 @@
 import { useState } from 'react';
 import { FileText, Plus, RefreshCw, Filter } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { QuestionManagementTable } from '@/components/Admin/QuestionManagementTable';
-import { QuestionModal } from '@/components/Admin/QuestionModal';
+import { DocumentManagementTable } from '@/components/Admin/DocumentManagementTable';
+import { DocumentModal } from '@/components/Admin/DocumentModal';
 import { Pagination } from '@/components/ui/Pagination';
-import { useAdminQuestions } from '@/hooks/useAdmin';
-import { QuestionBank } from '@/features/questions/questionsApi';
+import { useAdminDocuments } from '@/hooks/useAdmin';
+import { KnowledgeDocument } from '@/features/admin/adminApi';
 import { Loader2 } from 'lucide-react';
 
-export default function QuestionsPage() {
+export default function DocumentsPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedQuestion, setSelectedQuestion] = useState<QuestionBank | null>(
-    null
-  );
+  const [selectedDocument, setSelectedDocument] =
+    useState<KnowledgeDocument | null>(null);
 
   const skip = (currentPage - 1) * pageSize;
   const {
-    data: questions,
+    data: documents,
     isLoading,
     refetch,
-  } = useAdminQuestions(skip, pageSize);
+  } = useAdminDocuments(skip, pageSize);
 
-  const handleAddQuestion = () => {
-    setSelectedQuestion(null);
+  const handleAddDocument = () => {
+    setSelectedDocument(null);
     setIsModalOpen(true);
   };
 
-  const handleEditQuestion = (question: QuestionBank) => {
-    setSelectedQuestion(question);
+  const handleEditDocument = (document: KnowledgeDocument) => {
+    setSelectedDocument(document);
     setIsModalOpen(true);
   };
 
@@ -49,11 +48,11 @@ export default function QuestionsPage() {
   };
 
   // Estimate total pages based on current data
-  const totalItems = questions?.length || 0;
+  const totalItems = documents?.length || 0;
   const hasMore = totalItems === pageSize;
   const estimatedTotalPages = hasMore ? currentPage + 1 : currentPage;
 
-  if (isLoading && !questions) {
+  if (isLoading && !documents) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
@@ -66,9 +65,11 @@ export default function QuestionsPage() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Question Bank</h1>
+          <h1 className="text-3xl font-bold tracking-tight">
+            Knowledge Documents
+          </h1>
           <p className="text-muted-foreground mt-2">
-            Manage interview questions across all categories
+            Manage RAG documents for AI-powered interview questions
           </p>
         </div>
 
@@ -81,9 +82,9 @@ export default function QuestionsPage() {
             <Filter className="w-4 h-4 mr-2" />
             Filter
           </Button>
-          <Button size="sm" onClick={handleAddQuestion}>
+          <Button size="sm" onClick={handleAddDocument}>
             <Plus className="w-4 h-4 mr-2" />
-            Add Question
+            Add Document
           </Button>
         </div>
       </div>
@@ -98,7 +99,7 @@ export default function QuestionsPage() {
             <div>
               <div className="text-2xl font-bold">{totalItems}</div>
               <div className="text-sm text-muted-foreground">
-                Current Page Questions
+                Current Page Documents
               </div>
             </div>
           </div>
@@ -106,11 +107,11 @@ export default function QuestionsPage() {
       </div>
 
       {/* Table */}
-      <QuestionManagementTable
-        questions={questions || []}
+      <DocumentManagementTable
+        documents={documents || []}
         isLoading={isLoading}
         onRefresh={refetch}
-        onEdit={handleEditQuestion}
+        onEdit={handleEditDocument}
       />
 
       {/* Pagination */}
@@ -124,10 +125,10 @@ export default function QuestionsPage() {
       />
 
       {/* Modal */}
-      <QuestionModal
+      <DocumentModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        question={selectedQuestion}
+        document={selectedDocument}
         onSuccess={handleModalSuccess}
       />
     </div>

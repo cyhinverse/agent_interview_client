@@ -1,6 +1,9 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
 import {
-  authAPI,
+  useLoginMutation,
+  useRegisterMutation,
+  useLogoutMutation,
+  useChangePasswordMutation,
+  useRefreshMutation,
   LoginData,
   RegisterData,
   ChangePasswordData,
@@ -11,164 +14,119 @@ import {
   logout as logoutAction,
 } from '@/features/auth/authSlice';
 import { toast } from 'sonner';
+import { apiSlice } from '@/store/apiSlice';
+import { getErrorMessage } from '@/lib/utils';
 
-// Query keys
-export const authKeys = {
-  all: ['auth'] as const,
-  currentUser: () => [...authKeys.all, 'current'] as const,
-};
-
-// Login mutation
+// Login hook
 export function useLogin() {
   const dispatch = useAppDispatch();
-  const queryClient = useQueryClient();
+  const [login, result] = useLoginMutation();
 
-  return useMutation({
-    mutationFn: (data: LoginData) => authAPI.login(data),
-    onSuccess: (response) => {
-      // Store tokens in localStorage
-      localStorage.setItem('token', response.accessToken);
-      localStorage.setItem('refreshToken', response.refreshToken);
+  const handleLogin = async (data: LoginData) => {
+    try {
+      const response = await login(data).unwrap();
+      dispatch(setCredentials(response));
+      toast.success('Logged in successfully!');
+      return response;
+    } catch (error) {
+      console.error('Failed to login:', error);
+      toast.error(getErrorMessage(error, 'Failed to login'));
+      throw error;
+    }
+  };
 
-      // Update Redux store
-      dispatch(
-        setCredentials({
-          user: response.user,
-          accessToken: response.accessToken,
-          refreshToken: response.refreshToken,
-        })
-      );
-
-      // Invalidate user queries
-      queryClient.invalidateQueries({ queryKey: authKeys.currentUser() });
-
-      toast.success('Login successful!');
-    },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    onError: (error: any) => {
-      const errorMessage = error.response?.data?.message || 'Login failed';
-      toast.error(errorMessage);
-    },
-  });
+  return {
+    ...result,
+    isPending: result.isLoading,
+    mutate: handleLogin,
+    mutateAsync: handleLogin,
+  };
 }
 
-// Register mutation
+// Register hook
 export function useRegister() {
   const dispatch = useAppDispatch();
-  const queryClient = useQueryClient();
+  const [register, result] = useRegisterMutation();
 
-  return useMutation({
-    mutationFn: (data: RegisterData) => authAPI.register(data),
-    onSuccess: (response) => {
-      // Store tokens in localStorage
-      localStorage.setItem('token', response.accessToken);
-      localStorage.setItem('refreshToken', response.refreshToken);
+  const handleRegister = async (data: RegisterData) => {
+    try {
+      const response = await register(data).unwrap();
+      dispatch(setCredentials(response));
+      toast.success('Account created successfully!');
+      return response;
+    } catch (error) {
+      console.error('Failed to register:', error);
+      toast.error(getErrorMessage(error, 'Failed to register'));
+      throw error;
+    }
+  };
 
-      // Update Redux store
-      dispatch(
-        setCredentials({
-          user: response.user,
-          accessToken: response.accessToken,
-          refreshToken: response.refreshToken,
-        })
-      );
-
-      // Invalidate user queries
-      queryClient.invalidateQueries({ queryKey: authKeys.currentUser() });
-
-      toast.success('Registration successful!');
-    },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    onError: (error: any) => {
-      const errorMessage =
-        error.response?.data?.message || 'Registration failed';
-      toast.error(errorMessage);
-    },
-  });
+  return {
+    ...result,
+    isPending: result.isLoading,
+    mutate: handleRegister,
+    mutateAsync: handleRegister,
+  };
 }
 
-// Logout mutation
-export function useLogout() {
+// Logout hook
+export function useAuthLogout() {
   const dispatch = useAppDispatch();
-  const queryClient = useQueryClient();
+  const [logoutMutation, result] = useLogoutMutation();
 
-  return useMutation({
-    mutationFn: () => authAPI.logout(),
-    onSuccess: () => {
-      // Clear tokens from localStorage
-      localStorage.removeItem('token');
-      localStorage.removeItem('refreshToken');
-
-      // Update Redux store
-      dispatch(logoutAction());
-
-      // Clear all queries
-      queryClient.clear();
-
-      toast.success('Logged out successfully!');
-    },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    onError: (error: any) => {
-      console.error('Logout error:', error);
-      // Still clear local state even if API call fails
-      localStorage.removeItem('token');
-      localStorage.removeItem('refreshToken');
-      dispatch(logoutAction());
-      queryClient.clear();
-    },
-  });
-}
-
-// Change password mutation
-export function useChangePassword() {
-  return useMutation({
-    mutationFn: (data: ChangePasswordData) => authAPI.changePassword(data),
-    onSuccess: () => {
-      toast.success('Password changed successfully!');
-    },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    onError: (error: any) => {
-      const errorMessage =
-        error.response?.data?.message || 'Failed to change password';
-      toast.error(errorMessage);
-    },
-  });
-}
-
-// Refresh token mutation
-export function useRefreshToken() {
-  const dispatch = useAppDispatch();
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: (refreshToken: string) => authAPI.refreshToken(refreshToken),
-    onSuccess: (response) => {
-      // Update tokens in localStorage
-      localStorage.setItem('token', response.accessToken);
-      if (response.refreshToken) {
-        localStorage.setItem('refreshToken', response.refreshToken);
+  const handleLogout = async () => {
+    try {
+      // Call API logout if exists
+      try {
+        await logoutMutation().unwrap();
+      } catch (err) {
+        console.warn('Logout API failed, but clearing local state anyway', err);
       }
 
-      // Update Redux store
-      dispatch(
-        setCredentials({
-          user: response.user,
-          accessToken: response.accessToken,
-          refreshToken: response.refreshToken,
-        })
-      );
+      // Clear all queries
+      dispatch(apiSlice.util.resetApiState());
 
-      // Invalidate user queries
-      queryClient.invalidateQueries({ queryKey: authKeys.currentUser() });
-    },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    onError: (error: any) => {
-      console.error('Token refresh failed:', error);
-      // Clear tokens on refresh failure
-      localStorage.removeItem('token');
-      localStorage.removeItem('refreshToken');
+      // Dispatch logout action
       dispatch(logoutAction());
-      queryClient.clear();
-    },
-  });
+
+      toast.success('Logged out successfully!');
+    } catch (error) {
+      console.error('Failed to logout:', error);
+      toast.error('Failed to logout');
+    }
+  };
+
+  return {
+    ...result,
+    isPending: result.isLoading,
+    mutate: handleLogout,
+    mutateAsync: handleLogout,
+  };
 }
+
+export const useLogout = useAuthLogout;
+
+// Change password hook
+export function useAuthChangePassword() {
+  const [changePassword, result] = useChangePasswordMutation();
+
+  const handleChange = async (data: ChangePasswordData) => {
+    try {
+      await changePassword(data).unwrap();
+      toast.success('Password changed successfully!');
+    } catch (error) {
+      console.error('Failed to change password:', error);
+      toast.error(getErrorMessage(error, 'Failed to change password'));
+      throw error;
+    }
+  };
+
+  return {
+    ...result,
+    isPending: result.isLoading,
+    mutate: handleChange,
+    mutateAsync: handleChange,
+  };
+}
+
+export const useChangePassword = useAuthChangePassword;

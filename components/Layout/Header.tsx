@@ -7,16 +7,15 @@ import { useTheme } from 'next-themes';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
-
-import { useSelector } from 'react-redux';
-import { RootState } from '@/store/store';
+import { useCurrentUser } from '@/hooks';
 
 export default function Header() {
   const { theme, setTheme } = useTheme();
   const pathname = usePathname();
   const [mounted, setMounted] = useState(false);
 
-  const user = useSelector((state: RootState) => state.auth.user);
+  // Use React Query hook instead of Redux for user data
+  const { data: user } = useCurrentUser();
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect

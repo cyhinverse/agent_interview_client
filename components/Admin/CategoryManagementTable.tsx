@@ -48,7 +48,6 @@ export function CategoryManagementTable({
     if (!confirm('Are you sure you want to delete this category?')) return;
     try {
       await deleteCategory(categoryId);
-      toast.success('Category deleted successfully');
       onRefresh?.();
     } catch (error) {
       console.error('Failed to delete category:', error);

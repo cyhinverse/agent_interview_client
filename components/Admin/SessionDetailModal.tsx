@@ -1,6 +1,12 @@
 'use client';
 
-import { Calendar, Clock, User, BarChart, MessageSquare } from 'lucide-react';
+import {
+  Calendar,
+  Clock,
+  BarChart,
+  MessageSquare,
+  UserIcon,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -13,11 +19,30 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { cn } from '@/lib/utils';
+
+import { InterviewSession } from '@/features/interview/interviewApi';
+import { QuestionResponse } from '@/features/questions/questionsApi';
+import { EvaluationReport, User } from '@/features/users/usersApi';
+
+interface SessionWithDetails extends InterviewSession {
+  responses?: QuestionResponse[];
+  report?: EvaluationReport;
+  user?: User;
+}
+
+const getScoreColor = (score: number) => {
+  if (score >= 80)
+    return 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20';
+  if (score >= 60)
+    return 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20';
+  return 'bg-red-500/10 text-red-500 border-red-500/20';
+};
 
 interface SessionDetailModalProps {
   isOpen: boolean;
   onClose: () => void;
-  session: any;
+  session: SessionWithDetails | null;
 }
 
 export function SessionDetailModal({
@@ -54,9 +79,11 @@ export function SessionDetailModal({
   };
 
   const getScoreColor = (score: number) => {
-    if (score >= 80) return 'text-emerald-500';
-    if (score >= 60) return 'text-yellow-500';
-    return 'text-red-500';
+    if (score >= 80)
+      return 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20';
+    if (score >= 60)
+      return 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20';
+    return 'bg-red-500/10 text-red-500 border-red-500/20';
   };
 
   return (
@@ -86,9 +113,12 @@ export function SessionDetailModal({
               {session.score !== null && (
                 <div className="flex items-center gap-2">
                   <BarChart className="w-4 h-4 text-muted-foreground" />
-                  <span className={`font-bold ${getScoreColor(session.score)}`}>
+                  <Badge
+                    variant="outline"
+                    className={`font-bold ${getScoreColor(session.score || 0)}`}
+                  >
                     {session.score}%
-                  </span>
+                  </Badge>
                 </div>
               )}
             </div>
@@ -98,7 +128,7 @@ export function SessionDetailModal({
             {/* User Info */}
             <div className="space-y-3">
               <div className="flex items-center gap-2 text-sm font-medium">
-                <User className="w-4 h-4 text-muted-foreground" />
+                <UserIcon className="w-4 h-4 text-muted-foreground" />
                 Candidate
               </div>
               <div className="grid grid-cols-2 gap-4 text-sm">
@@ -152,30 +182,40 @@ export function SessionDetailModal({
             </div>
 
             {/* Responses */}
-            {session.responses?.length > 0 && (
+            {(session.responses?.length || 0) > 0 && (
               <>
                 <Separator />
                 <div className="space-y-3">
                   <div className="flex items-center gap-2 text-sm font-medium">
                     <MessageSquare className="w-4 h-4 text-muted-foreground" />
-                    Responses ({session.responses.length})
+                    Responses ({session.responses?.length || 0})
                   </div>
                   <div className="space-y-2">
-                    {session.responses.map((resp: any, idx: number) => (
-                      <div
-                        key={resp.id}
-                        className="flex items-center justify-between p-3 rounded-lg bg-muted/50"
-                      >
-                        <span className="text-sm text-muted-foreground">
-                          Question {idx + 1}
-                        </span>
-                        <Badge
-                          variant={resp.score >= 70 ? 'default' : 'secondary'}
+                    {session.responses?.map(
+                      (resp: QuestionResponse, idx: number) => (
+                        <div
+                          key={resp.id}
+                          className="flex items-center justify-between p-3 rounded-lg bg-muted/50"
                         >
-                          {resp.score}%
-                        </Badge>
-                      </div>
-                    ))}
+                          <span className="text-sm text-muted-foreground">
+                            Question {idx + 1}
+                          </span>
+                          <Badge
+                            variant="outline"
+                            className={cn(
+                              'font-bold',
+                              resp.score >= 80
+                                ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20'
+                                : resp.score >= 60
+                                ? 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20'
+                                : 'bg-red-500/10 text-red-500 border-red-500/20'
+                            )}
+                          >
+                            {resp.score}%
+                          </Badge>
+                        </div>
+                      )
+                    )}
                   </div>
                 </div>
               </>

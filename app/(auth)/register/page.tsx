@@ -50,12 +50,13 @@ export default function Register() {
     },
   });
 
-  function onSubmit(data: z.infer<typeof formSchema>) {
-    register(data, {
-      onSuccess: () => {
-        navigator.push('/login');
-      },
-    });
+  async function onSubmit(data: z.infer<typeof formSchema>) {
+    try {
+      await register(data);
+      navigator.push('/login');
+    } catch (error) {
+      // Error is already handled by the hook (toast)
+    }
   }
 
   return (
@@ -158,9 +159,9 @@ export default function Register() {
             </form>
           </CardContent>
           <CardFooter className="flex flex-col gap-4">
-            <Button 
-              type="submit" 
-              form="register-form" 
+            <Button
+              type="submit"
+              form="register-form"
               className="w-full"
               disabled={isPending}
             >

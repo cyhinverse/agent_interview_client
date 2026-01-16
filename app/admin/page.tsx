@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import {
   BarChart3,
@@ -25,6 +26,7 @@ import {
 import { Loader2 } from 'lucide-react';
 
 export default function AdminDashboard() {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState('overview');
   const [timeRange, setTimeRange] = useState('7d');
 
@@ -139,7 +141,7 @@ export default function AdminDashboard() {
             { id: 'overview', label: 'Overview', icon: BarChart3 },
             { id: 'users', label: 'Users', icon: Users },
             { id: 'sessions', label: 'Sessions', icon: Calendar },
-            { id: 'questions', label: 'Questions', icon: FileText },
+            { id: 'responses', label: 'Responses', icon: MessageSquare },
             { id: 'reports', label: 'Reports', icon: TrendingUp },
           ].map((tab) => (
             <button
@@ -246,22 +248,20 @@ export default function AdminDashboard() {
           </div>
         )}
 
-        {activeTab === 'questions' && (
+        {activeTab === 'responses' && (
           <div className="text-center py-12">
-            <FileText className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-lg font-bold mb-2">Question Management</h3>
+            <MessageSquare className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+            <h3 className="text-lg font-bold mb-2">Response Management</h3>
             <p className="text-muted-foreground mb-6">
-              Manage interview questions and categories
+              Manage user answers and feedback
             </p>
             <div className="flex items-center justify-center gap-4">
-              <Button
-                onClick={() => (window.location.href = '/admin/questions')}
-              >
-                Go to Question Bank
+              <Button onClick={() => router.push('/admin/responses')}>
+                Go to Responses
               </Button>
               <Button
                 variant="outline"
-                onClick={() => (window.location.href = '/admin/categories')}
+                onClick={() => router.push('/admin/categories')}
               >
                 Manage Categories
               </Button>
@@ -276,7 +276,7 @@ export default function AdminDashboard() {
             <p className="text-muted-foreground mb-6">
               View and analyze assessment results
             </p>
-            <Button onClick={() => (window.location.href = '/admin/reports')}>
+            <Button onClick={() => router.push('/admin/reports')}>
               View Reports
             </Button>
           </div>

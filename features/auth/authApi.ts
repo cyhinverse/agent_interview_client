@@ -1,4 +1,4 @@
-import instance from '@/api/http';
+import { apiSlice } from '@/store/apiSlice';
 
 // Types
 export interface LoginData {
@@ -38,34 +38,63 @@ export interface AuthError {
   statusCode: number;
 }
 
-// API Class
-class AuthAPI {
-  async login(data: LoginData): Promise<TokenResponse> {
-    const response = await instance.post<TokenResponse>('/auth/login', data);
-    return response.data;
-  }
+export const authApi = apiSlice.injectEndpoints({
+  overrideExisting: true,
+  endpoints: (builder) => ({
+    login: builder.mutation<TokenResponse, LoginData>({
+      query: (credentials) => ({
+        url: '/auth/login',
+        method: 'POST',
+        body: credentials,
+      }),
+      invalidatesTags: ['User'],
+    }),
+    register: builder.mutation<TokenResponse, RegisterData>({
+      query: (data) => ({
+        url: '/auth/register',
+        method: 'POST',
+        body: data,
+      }),
+      invalidatesTags: ['User'],
+    }),
+    changePassword: builder.mutation<{ message: string }, ChangePasswordData>({
+      query: (data) => ({
+        url: '/auth/change-password',
+        method: 'POST',
+        body: data,
+      }),
+    }),
+    logout: builder.mutation<{ message: string }, void>({
+      query: () => ({
+        url: '/auth/logout',
+        method: 'POST',
+      }),
+      invalidatesTags: ['User', 'InterviewSession', 'EvaluationReport'],
+    }),
+    refresh: builder.mutation<TokenResponse, { refresh_token: string }>({
+      query: (body) => ({
+        url: '/auth/refresh',
+        method: 'POST',
+        body,
+      }),
+    }),
+  }),
+});
 
-  async register(data: RegisterData): Promise<TokenResponse> {
-    const response = await instance.post<TokenResponse>('/auth/register', data);
-    return response.data;
-  }
+export const {
+  useLoginMutation,
+  useRegisterMutation,
+  useChangePasswordMutation,
+  useLogoutMutation,
+  useRefreshMutation,
+} = authApi;
 
-  async changePassword(data: ChangePasswordData): Promise<{ message: string }> {
-    const response = await instance.post('/auth/change-password', data);
-    return response.data;
-  }
-
-  async refreshToken(refreshToken: string): Promise<TokenResponse> {
-    const response = await instance.post<TokenResponse>('/auth/refresh', {
-      refresh_token: refreshToken,
-    });
-    return response.data;
-  }
-
-  async logout(): Promise<{ message: string }> {
-    const response = await instance.post('/auth/logout');
-    return response.data;
-  }
-}
-
-export const authAPI = new AuthAPI();
+// Backward compatible alias
+export const authAPI = {
+  login: async (data: LoginData) => authApi.endpoints.login.initiate(data),
+  register: async (data: RegisterData) =>
+    authApi.endpoints.register.initiate(data),
+  changePassword: async (data: ChangePasswordData) =>
+    authApi.endpoints.changePassword.initiate(data),
+  logout: async () => authApi.endpoints.logout.initiate(),
+};

@@ -1,25 +1,26 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import { ArrowLeft, Loader2, CheckCircle, XCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { CodeEditor } from '@/components/problems/CodeEditor';
-import {
-  questionBanksAPI,
-  QuestionBank,
-} from '@/features/questions/questionsApi';
+import { useQuestion } from '@/hooks';
 import { toast } from 'sonner';
 import Link from 'next/link';
 
 export default function ProblemDetailPage() {
   const params = useParams();
-  const router = useRouter();
   const problemId = params.id as string;
 
-  const [problem, setProblem] = useState<QuestionBank | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  // Use React Query hook for data fetching
+  const {
+    data: problem,
+    isLoading: loading,
+    error,
+    refetch,
+  } = useQuestion(problemId);
+
   const [code, setCode] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [result, setResult] = useState<{
@@ -28,29 +29,15 @@ export default function ProblemDetailPage() {
     comment: string;
   } | null>(null);
 
+  // Set initial code when problem is loaded
   useEffect(() => {
-    loadProblem();
-  }, [problemId]);
-
-  const loadProblem = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const data = await questionBanksAPI.getQuestionById(problemId);
-      setProblem(data);
-
-      // 根据问题语言设置初始代码
-      const language = data.difficulty?.toLowerCase().includes('python')
+    if (problem) {
+      const language = problem.difficulty?.toLowerCase().includes('python')
         ? 'python'
         : 'javascript';
       setCode(getInitialCode(language));
-    } catch (err) {
-      console.error('Failed to load problem:', err);
-      setError('Failed to load problem. Please try again later.');
-    } finally {
-      setLoading(false);
     }
-  };
+  }, [problem]);
 
   const getInitialCode = (language: string): string => {
     if (language === 'python') {
@@ -81,12 +68,12 @@ console.log(\`Result: \${result}\`);`;
       setSubmitting(true);
       setResult(null);
 
-      // 这里应该调用API提交答案
-      // 暂时模拟API调用
+      // API should be called here to submit the answer
+      // Temporarily mock API call
       await new Promise((resolve) => setTimeout(resolve, 1500));
 
-      // 模拟评分结果
-      const score = Math.floor(Math.random() * 40) + 60; // 60-100分
+      // Mock scoring results
+      const score = Math.floor(Math.random() * 40) + 60; // 60-100 points
       const success = score >= 70;
 
       setResult({
@@ -110,7 +97,7 @@ console.log(\`Result: \${result}\`);`;
 
   const handleRunCode = () => {
     toast.info('Running code...');
-    // 这里可以添加实际的代码执行逻辑
+    // Actual code execution logic can be added here
     console.log('Running code:', code);
   };
 
@@ -149,9 +136,11 @@ console.log(\`Result: \${result}\`);`;
 
           <div className="text-center py-20">
             <p className="text-destructive mb-4">
-              {error || 'Problem not found'}
+              {error
+                ? 'Failed to load problem. Please try again later.'
+                : 'Problem not found'}
             </p>
-            <Button onClick={loadProblem}>Retry</Button>
+            <Button onClick={() => refetch()}>Retry</Button>
           </div>
         </div>
       </div>
@@ -161,7 +150,7 @@ console.log(\`Result: \${result}\`);`;
   return (
     <div className="min-h-[calc(100vh-6rem)] py-12 px-6">
       <div className="max-w-6xl mx-auto space-y-8">
-        {/* 返回按钮 */}
+        {/* Back button */}
         <Link
           href="/problems"
           className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
@@ -171,7 +160,7 @@ console.log(\`Result: \${result}\`);`;
         </Link>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* 问题描述 */}
+          {/* Problem description */}
           <div className="space-y-6">
             <div className="bg-card border border-border rounded-2xl p-8 shadow-sm">
               <div className="flex items-center justify-between mb-6">
@@ -217,7 +206,7 @@ console.log(\`Result: \${result}\`);`;
               )}
             </div>
 
-            {/* 提交结果 */}
+            {/* Submit results */}
             {result && (
               <div
                 className={`border rounded-2xl p-6 ${
@@ -252,7 +241,7 @@ console.log(\`Result: \${result}\`);`;
             )}
           </div>
 
-          {/* 代码编辑器 */}
+          {/* Code editor */}
           <div className="space-y-6">
             <div className="bg-card border border-border rounded-2xl p-6 shadow-sm">
               <div className="flex items-center justify-between mb-6">
@@ -302,7 +291,7 @@ console.log(\`Result: \${result}\`);`;
               </div>
             </div>
 
-            {/* 提示和建议 */}
+            {/* Tips and suggestions */}
             <div className="bg-card border border-border rounded-2xl p-6 shadow-sm">
               <h3 className="text-sm font-semibold mb-4">Tips & Suggestions</h3>
               <ul className="space-y-3 text-sm text-muted-foreground">

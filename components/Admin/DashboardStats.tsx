@@ -19,7 +19,7 @@ export function DashboardStats({ stats }: DashboardStatsProps) {
   const statCards = [
     {
       title: 'Total Users',
-      value: stats.totalUsers.toLocaleString(),
+      value: (stats?.totalUsers ?? 0).toLocaleString(),
       icon: Users,
       color: 'text-blue-500',
       bgColor: 'bg-blue-500/10',
@@ -28,7 +28,7 @@ export function DashboardStats({ stats }: DashboardStatsProps) {
     },
     {
       title: 'Total Sessions',
-      value: stats.totalSessions.toLocaleString(),
+      value: (stats?.totalSessions ?? 0).toLocaleString(),
       icon: Calendar,
       color: 'text-green-500',
       bgColor: 'bg-green-500/10',
@@ -36,8 +36,8 @@ export function DashboardStats({ stats }: DashboardStatsProps) {
       trend: 'up',
     },
     {
-      title: 'Total Questions',
-      value: stats.totalQuestions.toLocaleString(),
+      title: 'Total Documents',
+      value: (stats?.totalDocuments ?? 0).toLocaleString(),
       icon: FileText,
       color: 'text-purple-500',
       bgColor: 'bg-purple-500/10',
@@ -46,7 +46,7 @@ export function DashboardStats({ stats }: DashboardStatsProps) {
     },
     {
       title: 'Total Responses',
-      value: stats.totalResponses.toLocaleString(),
+      value: (stats?.totalResponses ?? 0).toLocaleString(),
       icon: MessageSquare,
       color: 'text-orange-500',
       bgColor: 'bg-orange-500/10',
@@ -55,7 +55,7 @@ export function DashboardStats({ stats }: DashboardStatsProps) {
     },
     {
       title: 'Active Users',
-      value: stats.activeUsers.toLocaleString(),
+      value: (stats?.activeUsers ?? 0).toLocaleString(),
       icon: TrendingUp,
       color: 'text-red-500',
       bgColor: 'bg-red-500/10',
@@ -64,7 +64,7 @@ export function DashboardStats({ stats }: DashboardStatsProps) {
     },
     {
       title: 'Avg Session Score',
-      value: `${stats.averageSessionScore.toFixed(1)}%`,
+      value: `${(stats?.averageSessionScore ?? 0).toFixed(1)}%`,
       icon: Award,
       color: 'text-yellow-500',
       bgColor: 'bg-yellow-500/10',

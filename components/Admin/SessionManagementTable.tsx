@@ -73,7 +73,6 @@ export function SessionManagementTable({
     if (!confirm('Are you sure you want to delete this session?')) return;
     try {
       await deleteSession.mutateAsync(sessionId);
-      toast.success('Session deleted successfully');
       onRefresh?.();
     } catch (error) {
       console.error('Failed to delete session:', error);

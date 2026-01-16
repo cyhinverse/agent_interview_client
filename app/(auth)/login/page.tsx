@@ -40,12 +40,13 @@ export default function Login() {
     },
   });
 
-  function onSubmit(data: z.infer<typeof formSchema>) {
-    login(data, {
-      onSuccess: () => {
-        navigator.push('/');
-      },
-    });
+  async function onSubmit(data: z.infer<typeof formSchema>) {
+    try {
+      await login(data);
+      navigator.push('/');
+    } catch (error) {
+      // Error is already handled by the hook (toast)
+    }
   }
 
   return (
@@ -115,9 +116,9 @@ export default function Login() {
             </form>
           </CardContent>
           <CardFooter className="flex flex-col gap-4">
-            <Button 
-              type="submit" 
-              form="login-form" 
+            <Button
+              type="submit"
+              form="login-form"
               className="w-full"
               disabled={isPending}
             >

@@ -1,117 +1,88 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
-  interviewCategoriesAPI,
-  InterviewSession,
-  CreateInterviewSessionData,
+  useGetInterviewCategoriesQuery,
+  useGetInterviewCategoryByIdQuery,
+  useCreateInterviewSessionMutation,
+  useGetUserInterviewSessionsQuery,
+  useGetInterviewSessionByIdQuery,
+  useUpdateInterviewSessionMutation,
+  useDeleteInterviewSessionMutation,
 } from '@/features/interview/interviewApi';
 import { toast } from 'sonner';
-
-// Query keys
-export const interviewKeys = {
-  all: ['interviews'] as const,
-  categories: () => [...interviewKeys.all, 'categories'] as const,
-  category: (id: string) => [...interviewKeys.categories(), id] as const,
-  sessions: () => [...interviewKeys.all, 'sessions'] as const,
-  session: (id: string) => [...interviewKeys.sessions(), id] as const,
-  userSessions: (skip: number, take: number) =>
-    [...interviewKeys.sessions(), 'user', { skip, take }] as const,
-};
+import { getErrorMessage } from '@/lib/utils';
 
 // Hooks for interview categories
 export function useInterviewCategories() {
-  return useQuery({
-    queryKey: interviewKeys.categories(),
-    queryFn: () => interviewCategoriesAPI.getCategories(),
-    staleTime: 10 * 60 * 1000, // 10 minutes
-  });
+  return useGetInterviewCategoriesQuery();
 }
 
 export function useInterviewCategory(id: string) {
-  return useQuery({
-    queryKey: interviewKeys.category(id),
-    queryFn: () => interviewCategoriesAPI.getCategoryById(id),
-    enabled: !!id,
+  return useGetInterviewCategoryByIdQuery(id, {
+    skip: !id,
   });
 }
 
 // Hooks for interview sessions
-export function useInterviewSessions(skip: number = 0, take: number = 20) {
-  return useQuery({
-    queryKey: interviewKeys.userSessions(skip, take),
-    queryFn: () => interviewCategoriesAPI.getUserSessions(skip, take),
-  });
+export function useUserInterviewSessions(skip: number = 0, take: number = 20) {
+  return useGetUserInterviewSessionsQuery({ skip, take });
 }
 
-export function useInterviewSession(id: string) {
-  return useQuery({
-    queryKey: interviewKeys.session(id),
-    queryFn: () => interviewCategoriesAPI.getSessionById(id),
-    enabled: !!id,
-    staleTime: 2 * 60 * 1000, // 2 minutes for active sessions
+export const useInterviewSessions = useUserInterviewSessions;
+
+export function useInterviewSession(sessionId: string) {
+  return useGetInterviewSessionByIdQuery(sessionId, {
+    skip: !sessionId,
   });
 }
 
 // Mutations
 export function useCreateInterviewSession() {
-  const queryClient = useQueryClient();
+  const [createSession, result] = useCreateInterviewSessionMutation();
 
-  return useMutation({
-    mutationFn: (data: CreateInterviewSessionData) =>
-      interviewCategoriesAPI.createInterviewSession(data),
-    onSuccess: (session) => {
-      // Update the cache
-      queryClient.invalidateQueries({ queryKey: interviewKeys.sessions() });
-      queryClient.setQueryData(interviewKeys.session(session.id), session);
+  const handleCreate = async (data: { categoryId: string }) => {
+    try {
+      const response = await createSession(data).unwrap();
+      toast.success('Interview session created!');
+      return response;
+    } catch (error) {
+      console.error('Failed to create session:', error);
+      toast.error(getErrorMessage(error, 'Failed to create session'));
+      throw error;
+    }
+  };
 
-      toast.success('Interview session created successfully!');
-    },
-    onError: (error) => {
-      console.error('Failed to create interview session:', error);
-      toast.error('Failed to create interview session');
-    },
-  });
+  return { ...result, mutate: handleCreate, mutateAsync: handleCreate };
 }
 
 export function useUpdateInterviewSession() {
-  const queryClient = useQueryClient();
+  const [updateSession, result] = useUpdateInterviewSessionMutation();
 
-  return useMutation({
-    mutationFn: ({
-      id,
-      data,
-    }: {
-      id: string;
-      data: Partial<InterviewSession>;
-    }) => interviewCategoriesAPI.updateSession(id, data),
-    onSuccess: (session) => {
-      // Update the cache
-      queryClient.setQueryData(interviewKeys.session(session.id), session);
-      queryClient.invalidateQueries({ queryKey: interviewKeys.sessions() });
+  const handleUpdate = async (sessionId: string, data: { status?: string }) => {
+    try {
+      const response = await updateSession({ sessionId, data }).unwrap();
+      return response;
+    } catch (error) {
+      console.error('Failed to update session:', error);
+      toast.error(getErrorMessage(error, 'Failed to update session'));
+      throw error;
+    }
+  };
 
-      toast.success('Interview session updated!');
-    },
-    onError: (error) => {
-      console.error('Failed to update interview session:', error);
-      toast.error('Failed to update interview session');
-    },
-  });
+  return { ...result, mutate: handleUpdate };
 }
 
 export function useDeleteInterviewSession() {
-  const queryClient = useQueryClient();
+  const [deleteSession, result] = useDeleteInterviewSessionMutation();
 
-  return useMutation({
-    mutationFn: (id: string) => interviewCategoriesAPI.deleteSession(id),
-    onSuccess: (_, id) => {
-      // Remove from cache
-      queryClient.removeQueries({ queryKey: interviewKeys.session(id) });
-      queryClient.invalidateQueries({ queryKey: interviewKeys.sessions() });
+  const handleDelete = async (sessionId: string) => {
+    try {
+      await deleteSession(sessionId).unwrap();
+      toast.success('Session deleted');
+    } catch (error) {
+      console.error('Failed to delete session:', error);
+      toast.error(getErrorMessage(error, 'Failed to delete session'));
+      throw error;
+    }
+  };
 
-      toast.success('Interview session deleted!');
-    },
-    onError: (error) => {
-      console.error('Failed to delete interview session:', error);
-      toast.error('Failed to delete interview session');
-    },
-  });
+  return { ...result, mutate: handleDelete };
 }

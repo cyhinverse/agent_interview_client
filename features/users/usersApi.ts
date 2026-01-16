@@ -1,4 +1,4 @@
-import instance from '@/api/http';
+import { apiSlice } from '@/store/apiSlice';
 
 // Types
 export interface User {
@@ -51,90 +51,149 @@ export interface EvaluationReport {
   };
 }
 
-// API Class
-class UsersAPI {
-  async getCurrentUser(): Promise<User> {
-    const response = await instance.get('/users/me');
-    return response.data;
-  }
+export const usersApi = apiSlice.injectEndpoints({
+  overrideExisting: true,
+  endpoints: (builder) => ({
+    getCurrentUser: builder.query<User, void>({
+      query: () => '/users/me',
+      providesTags: ['User'],
+    }),
+    updateUser: builder.mutation<User, UpdateUserData>({
+      query: (data) => ({
+        url: '/users/me',
+        method: 'PUT',
+        body: data,
+      }),
+      invalidatesTags: ['User'],
+    }),
+    changePassword: builder.mutation<{ message: string }, ChangePasswordData>({
+      query: (data) => ({
+        url: '/users/change-password',
+        method: 'POST',
+        body: data,
+      }),
+    }),
+    getUserStats: builder.query<UserStats, void>({
+      query: () => '/users/stats',
+    }),
+    getUserReports: builder.query<
+      EvaluationReport[],
+      { skip?: number; take?: number }
+    >({
+      query: ({ skip = 0, take = 20 }) =>
+        `/users/reports?skip=${skip}&take=${take}`,
+      providesTags: ['EvaluationReport'],
+    }),
+    getReportById: builder.query<EvaluationReport, string>({
+      query: (reportId) => `/users/reports/${reportId}`,
+      providesTags: (result, error, arg) => [
+        { type: 'EvaluationReport', id: arg },
+      ],
+    }),
+    getSessionReport: builder.query<EvaluationReport, string>({
+      query: (sessionId) => `/users/sessions/${sessionId}/report`,
+      providesTags: (result, error, arg) => [
+        { type: 'EvaluationReport', id: arg },
+      ],
+    }),
+    // Admin user endpoints
+    getAllUsers: builder.query<User[], { skip?: number; take?: number }>({
+      query: ({ skip = 0, take = 50 }) =>
+        `/admin/users?skip=${skip}&take=${take}`,
+      providesTags: ['User'],
+    }),
+    updateUserRole: builder.mutation<
+      User,
+      { userId: string; role: 'CANDIDATE' | 'INTERVIEWER' | 'ADMIN' }
+    >({
+      query: ({ userId, role }) => ({
+        url: `/admin/users/${userId}/role`,
+        method: 'PUT',
+        body: { role },
+      }),
+      invalidatesTags: ['User'],
+    }),
+    deleteUser: builder.mutation<void, string>({
+      query: (userId) => ({
+        url: `/admin/users/${userId}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: ['User'],
+    }),
+    getAllReports: builder.query<
+      EvaluationReport[],
+      { skip?: number; take?: number }
+    >({
+      query: ({ skip = 0, take = 50 }) =>
+        `/admin/reports?skip=${skip}&take=${take}`,
+      providesTags: ['EvaluationReport'],
+    }),
+    updateReport: builder.mutation<
+      EvaluationReport,
+      { reportId: string; data: Partial<EvaluationReport> }
+    >({
+      query: ({ reportId, data }) => ({
+        url: `/admin/reports/${reportId}`,
+        method: 'PUT',
+        body: data,
+      }),
+      invalidatesTags: (result, error, arg) => [
+        { type: 'EvaluationReport', id: arg.reportId },
+        'EvaluationReport',
+      ],
+    }),
+    deleteReport: builder.mutation<void, string>({
+      query: (reportId) => ({
+        url: `/admin/reports/${reportId}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: ['EvaluationReport'],
+    }),
+  }),
+});
 
-  async updateUser(data: UpdateUserData): Promise<User> {
-    const response = await instance.put('/users/me', data);
-    return response.data;
-  }
+export const {
+  useGetCurrentUserQuery,
+  useUpdateUserMutation,
+  useChangePasswordMutation,
+  useGetUserStatsQuery,
+  useGetUserReportsQuery,
+  useGetReportByIdQuery,
+  useGetSessionReportQuery,
+  useGetAllUsersQuery,
+  useUpdateUserRoleMutation,
+  useDeleteUserMutation,
+  useGetAllReportsQuery,
+  useUpdateReportMutation,
+  useDeleteReportMutation,
+} = usersApi;
 
-  async changePassword(data: ChangePasswordData): Promise<{ message: string }> {
-    const response = await instance.post('/users/change-password', data);
-    return response.data;
-  }
-
-  async getUserStats(): Promise<UserStats> {
-    const response = await instance.get('/users/stats');
-    return response.data;
-  }
-
-  async getUserReports(
-    skip: number = 0,
-    take: number = 20
-  ): Promise<EvaluationReport[]> {
-    const response = await instance.get(
-      `/users/reports?skip=${skip}&take=${take}`
-    );
-    return response.data;
-  }
-
-  async getReportById(reportId: string): Promise<EvaluationReport> {
-    const response = await instance.get(`/users/reports/${reportId}`);
-    return response.data;
-  }
-
-  async getSessionReport(sessionId: string): Promise<EvaluationReport> {
-    const response = await instance.get(`/users/sessions/${sessionId}/report`);
-    return response.data;
-  }
-
-  async getAllUsers(skip: number = 0, take: number = 50): Promise<User[]> {
-    const response = await instance.get(
-      `/admin/users?skip=${skip}&take=${take}`
-    );
-    return response.data;
-  }
-
-  async updateUserRole(
+// Backward compatible alias
+export const usersAPI = {
+  getCurrentUser: async () => usersApi.endpoints.getCurrentUser.initiate(),
+  updateUser: async (data: UpdateUserData) =>
+    usersApi.endpoints.updateUser.initiate(data),
+  changePassword: async (data: ChangePasswordData) =>
+    usersApi.endpoints.changePassword.initiate(data),
+  getUserStats: async () => usersApi.endpoints.getUserStats.initiate(),
+  getUserReports: async (skip = 0, take = 20) =>
+    usersApi.endpoints.getUserReports.initiate({ skip, take }),
+  getReportById: async (reportId: string) =>
+    usersApi.endpoints.getReportById.initiate(reportId),
+  getSessionReport: async (sessionId: string) =>
+    usersApi.endpoints.getSessionReport.initiate(sessionId),
+  getAllUsers: async (skip = 0, take = 50) =>
+    usersApi.endpoints.getAllUsers.initiate({ skip, take }),
+  updateUserRole: async (
     userId: string,
     role: 'CANDIDATE' | 'INTERVIEWER' | 'ADMIN'
-  ): Promise<User> {
-    const response = await instance.put(`/admin/users/${userId}/role`, {
-      role,
-    });
-    return response.data;
-  }
-
-  async deleteUser(userId: string): Promise<void> {
-    await instance.delete(`/admin/users/${userId}`);
-  }
-
-  async getAllReports(
-    skip: number = 0,
-    take: number = 50
-  ): Promise<EvaluationReport[]> {
-    const response = await instance.get(
-      `/admin/reports?skip=${skip}&take=${take}`
-    );
-    return response.data;
-  }
-
-  async updateReport(
-    reportId: string,
-    data: Partial<EvaluationReport>
-  ): Promise<EvaluationReport> {
-    const response = await instance.put(`/admin/reports/${reportId}`, data);
-    return response.data;
-  }
-
-  async deleteReport(reportId: string): Promise<void> {
-    await instance.delete(`/admin/reports/${reportId}`);
-  }
-}
-
-export const usersAPI = new UsersAPI();
+  ) => usersApi.endpoints.updateUserRole.initiate({ userId, role }),
+  deleteUser: async (userId: string) =>
+    usersApi.endpoints.deleteUser.initiate(userId),
+  getAllReports: async (skip = 0, take = 50) =>
+    usersApi.endpoints.getAllReports.initiate({ skip, take }),
+  updateReport: async (reportId: string, data: Partial<EvaluationReport>) =>
+    usersApi.endpoints.updateReport.initiate({ reportId, data }),
+  deleteReport: async (reportId: string) =>
+    usersApi.endpoints.deleteReport.initiate(reportId),
+};

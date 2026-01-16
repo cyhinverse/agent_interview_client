@@ -91,23 +91,14 @@ export function CategoryModal({
     }
 
     if (isEditing && category) {
-      updateCategory(
-        { categoryId: category.id, data: formData },
-        {
-          onSuccess: () => {
-            toast.success('Category updated successfully');
-            onSuccess?.();
-            onClose();
-          },
-        }
-      );
+      updateCategory({ categoryId: category.id, data: formData }).then(() => {
+        onSuccess?.();
+        onClose();
+      });
     } else {
-      createCategory(formData, {
-        onSuccess: () => {
-          toast.success('Category created successfully');
-          onSuccess?.();
-          onClose();
-        },
+      createCategory(formData).then(() => {
+        onSuccess?.();
+        onClose();
       });
     }
   };

@@ -1,376 +1,410 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
-  adminAPI,
-  AdminDashboardData,
-  SystemStats,
+  useGetDashboardQuery,
+  useGetSystemStatsQuery,
+  useGetAllInterviewCategoriesQuery,
+  useCreateInterviewCategoryMutation,
+  useUpdateInterviewCategoryMutation,
+  useDeleteInterviewCategoryMutation,
+  useGetAllDocumentsQuery,
+  useCreateDocumentMutation,
+  useUpdateDocumentMutation,
+  useDeleteDocumentMutation,
+  useUploadDocumentChunksMutation,
+  useGetDocumentChunksQuery,
+  useGetAllSessionsQuery,
+  useGetSessionDetailsQuery,
+  useDeleteSessionMutation,
+  useGetAllResponsesQuery,
+  useUpdateResponseMutation,
+  useDeleteResponseMutation,
+  KnowledgeDocument,
 } from '@/features/admin/adminApi';
-import { User, EvaluationReport } from '@/features/users/usersApi';
 import {
-  InterviewCategory,
-  InterviewSession,
-} from '@/features/interview/interviewApi';
-import {
-  QuestionBank,
-  QuestionResponse,
-} from '@/features/questions/questionsApi';
+  useGetAllUsersQuery,
+  useUpdateUserRoleMutation,
+  useDeleteUserMutation,
+  useGetAllReportsQuery,
+  useUpdateReportMutation,
+  useDeleteReportMutation,
+  EvaluationReport,
+} from '@/features/users/usersApi';
+import { InterviewCategory } from '@/features/interview/interviewApi';
+import { QuestionResponse } from '@/features/questions/questionsApi';
 import { toast } from 'sonner';
+import { getErrorMessage } from '@/lib/utils';
 
-// Query keys
-export const adminKeys = {
-  all: ['admin'] as const,
-  dashboard: () => [...adminKeys.all, 'dashboard'] as const,
-  stats: () => [...adminKeys.all, 'stats'] as const,
-  users: () => [...adminKeys.all, 'users'] as const,
-  userList: (skip: number, take: number) =>
-    [...adminKeys.users(), 'list', { skip, take }] as const,
-  user: (id: string) => [...adminKeys.users(), 'detail', id] as const,
-  categories: () => [...adminKeys.all, 'categories'] as const,
-  categoryList: () => [...adminKeys.categories(), 'list'] as const,
-  category: (id: string) => [...adminKeys.categories(), 'detail', id] as const,
-  questions: () => [...adminKeys.all, 'questions'] as const,
-  questionList: (skip: number, take: number) =>
-    [...adminKeys.questions(), 'list', { skip, take }] as const,
-  question: (id: string) => [...adminKeys.questions(), 'detail', id] as const,
-  sessions: () => [...adminKeys.all, 'sessions'] as const,
-  sessionList: (skip: number, take: number) =>
-    [...adminKeys.sessions(), 'list', { skip, take }] as const,
-  session: (id: string) => [...adminKeys.sessions(), 'detail', id] as const,
-  reports: () => [...adminKeys.all, 'reports'] as const,
-  reportList: (skip: number, take: number) =>
-    [...adminKeys.reports(), 'list', { skip, take }] as const,
-  report: (id: string) => [...adminKeys.reports(), 'detail', id] as const,
-  responses: () => [...adminKeys.all, 'responses'] as const,
-  responseList: (skip: number, take: number) =>
-    [...adminKeys.responses(), 'list', { skip, take }] as const,
-  response: (id: string) => [...adminKeys.responses(), 'detail', id] as const,
-};
-
-// Dashboard hooks
+// Hooks for basic stats
 export function useAdminDashboard() {
-  return useQuery({
-    queryKey: adminKeys.dashboard(),
-    queryFn: () => adminAPI.getDashboard(),
-    staleTime: 5 * 60 * 1000, // 5 minutes
-  });
+  return useGetDashboardQuery();
 }
 
 export function useSystemStats() {
-  return useQuery({
-    queryKey: adminKeys.stats(),
-    queryFn: () => adminAPI.getSystemStats(),
-    staleTime: 2 * 60 * 1000, // 2 minutes
-  });
+  return useGetSystemStatsQuery();
 }
 
-// User management hooks
+// Category hooks
+export function useAdminCategories() {
+  return useGetAllInterviewCategoriesQuery();
+}
+
+// Alias for backward compatibility
+export const useAllCategories = useAdminCategories;
+
+export function useCreateInterviewCategory() {
+  const [createCategory, result] = useCreateInterviewCategoryMutation();
+
+  const handleCreate = async (data: {
+    name: string;
+    slug: string;
+    systemPrompt: string;
+    language?: string;
+  }) => {
+    try {
+      await createCategory(data).unwrap();
+      toast.success('Category created successfully!');
+    } catch (error) {
+      toast.error(getErrorMessage(error, 'Failed to create category'));
+      throw error;
+    }
+  };
+
+  return {
+    ...result,
+    isPending: result.isLoading,
+    mutate: handleCreate,
+    mutateAsync: handleCreate,
+  };
+}
+
+// Alias
+export const useCreateCategory = useCreateInterviewCategory;
+
+export function useUpdateInterviewCategory() {
+  const [updateCategory, result] = useUpdateInterviewCategoryMutation();
+
+  const handleUpdate = async (args: {
+    categoryId: string;
+    data: Partial<InterviewCategory>;
+  }) => {
+    try {
+      await updateCategory(args).unwrap();
+      toast.success('Category updated successfully!');
+    } catch (error) {
+      toast.error(getErrorMessage(error, 'Failed to update category'));
+      throw error;
+    }
+  };
+
+  return {
+    ...result,
+    isPending: result.isLoading,
+    mutate: handleUpdate,
+    mutateAsync: handleUpdate,
+  };
+}
+
+// Alias
+export const useUpdateCategory = useUpdateInterviewCategory;
+
+export function useDeleteInterviewCategory() {
+  const [deleteCategory, result] = useDeleteInterviewCategoryMutation();
+
+  const handleDelete = async (categoryId: string) => {
+    try {
+      await deleteCategory(categoryId).unwrap();
+      toast.success('Category deleted successfully!');
+    } catch (error) {
+      toast.error(getErrorMessage(error, 'Failed to delete category'));
+      throw error;
+    }
+  };
+
+  return {
+    ...result,
+    isPending: result.isLoading,
+    mutate: handleDelete,
+    mutateAsync: handleDelete,
+  };
+}
+
+// Alias
+export const useDeleteCategory = useDeleteInterviewCategory;
+
+// User hooks
 export function useAdminUsers(skip: number = 0, take: number = 50) {
-  return useQuery({
-    queryKey: adminKeys.userList(skip, take),
-    queryFn: () => adminAPI.getAllUsers(skip, take),
-  });
+  return useGetAllUsersQuery({ skip, take });
 }
 
 export function useUpdateUserRole() {
-  const queryClient = useQueryClient();
+  const [updateRole, result] = useUpdateUserRoleMutation();
 
-  return useMutation({
-    mutationFn: ({
-      userId,
-      role,
-    }: {
-      userId: string;
-      role: 'CANDIDATE' | 'INTERVIEWER' | 'ADMIN';
-    }) => adminAPI.updateUserRole(userId, role),
-    onSuccess: (user) => {
-      // Update user in cache
-      queryClient.setQueryData(adminKeys.user(user.id), user);
-      queryClient.invalidateQueries({ queryKey: adminKeys.users() });
+  const handleUpdate = async (args: {
+    userId: string;
+    role: 'CANDIDATE' | 'INTERVIEWER' | 'ADMIN';
+  }) => {
+    try {
+      await updateRole(args).unwrap();
+      toast.success('User role updated successfully!');
+    } catch (error) {
+      toast.error(getErrorMessage(error, 'Failed to update user role'));
+      throw error;
+    }
+  };
 
-      toast.success(`User role updated to ${user.role}`);
-    },
-    onError: (error) => {
-      console.error('Failed to update user role:', error);
-      toast.error('Failed to update user role');
-    },
-  });
+  return {
+    ...result,
+    isPending: result.isLoading,
+    mutate: handleUpdate,
+    mutateAsync: handleUpdate,
+  };
 }
 
 export function useDeleteUser() {
-  const queryClient = useQueryClient();
+  const [deleteUser, result] = useDeleteUserMutation();
 
-  return useMutation({
-    mutationFn: (userId: string) => adminAPI.deleteUser(userId),
-    onSuccess: (_, userId) => {
-      // Remove user from cache
-      queryClient.removeQueries({ queryKey: adminKeys.user(userId) });
-      queryClient.invalidateQueries({ queryKey: adminKeys.users() });
+  const handleDelete = async (userId: string) => {
+    try {
+      await deleteUser(userId).unwrap();
+      toast.success('User deleted successfully!');
+    } catch (error) {
+      toast.error(getErrorMessage(error, 'Failed to delete user'));
+      throw error;
+    }
+  };
 
-      toast.success('User deleted successfully');
-    },
-    onError: (error) => {
-      console.error('Failed to delete user:', error);
-      toast.error('Failed to delete user');
-    },
-  });
+  return {
+    ...result,
+    isPending: result.isLoading,
+    mutate: handleDelete,
+    mutateAsync: handleDelete,
+  };
 }
 
-// Interview category management hooks
-export function useAdminCategories() {
-  return useQuery({
-    queryKey: adminKeys.categoryList(),
-    queryFn: () => adminAPI.getAllInterviewCategories?.(),
-  });
+// Document hooks
+export function useAdminDocuments(
+  skip: number = 0,
+  take: number = 50,
+  categoryId?: string
+) {
+  return useGetAllDocumentsQuery({ skip, take, categoryId });
 }
 
-export function useCreateInterviewCategory() {
-  const queryClient = useQueryClient();
+// Alias
+export const useAllDocuments = useAdminDocuments;
 
-  return useMutation({
-    mutationFn: (
-      data: Parameters<typeof adminAPI.createInterviewCategory>[0]
-    ) => adminAPI.createInterviewCategory(data),
-    onSuccess: (category) => {
-      queryClient.invalidateQueries({ queryKey: adminKeys.categories() });
-      toast.success('Interview category created successfully');
-    },
-    onError: (error) => {
-      console.error('Failed to create interview category:', error);
-      toast.error('Failed to create interview category');
-    },
-  });
+export function useCreateDocument() {
+  const [createDocument, result] = useCreateDocumentMutation();
+
+  const handleCreate = async (data: {
+    categoryId: string;
+    title: string;
+    fileName: string;
+    fileType: string;
+    fileUrl?: string;
+    fileSize?: number;
+  }) => {
+    try {
+      await createDocument(data).unwrap();
+      toast.success('Document created successfully!');
+    } catch (error) {
+      toast.error(getErrorMessage(error, 'Failed to create document'));
+      throw error;
+    }
+  };
+
+  return {
+    ...result,
+    isPending: result.isLoading,
+    mutate: handleCreate,
+    mutateAsync: handleCreate,
+  };
 }
 
-export function useUpdateInterviewCategory() {
-  const queryClient = useQueryClient();
+export function useUpdateDocument() {
+  const [updateDocument, result] = useUpdateDocumentMutation();
 
-  return useMutation({
-    mutationFn: ({
-      categoryId,
-      data,
-    }: {
-      categoryId: string;
-      data: Partial<InterviewCategory>;
-    }) => adminAPI.updateInterviewCategory(categoryId, data),
-    onSuccess: (category) => {
-      queryClient.setQueryData(adminKeys.category(category.id), category);
-      queryClient.invalidateQueries({ queryKey: adminKeys.categories() });
-      toast.success('Interview category updated successfully');
-    },
-    onError: (error) => {
-      console.error('Failed to update interview category:', error);
-      toast.error('Failed to update interview category');
-    },
-  });
+  const handleUpdate = async (args: {
+    documentId: string;
+    data: Partial<KnowledgeDocument>;
+  }) => {
+    try {
+      await updateDocument(args).unwrap();
+      toast.success('Document updated successfully!');
+    } catch (error) {
+      toast.error(getErrorMessage(error, 'Failed to update document'));
+      throw error;
+    }
+  };
+
+  return {
+    ...result,
+    isPending: result.isLoading,
+    mutate: handleUpdate,
+    mutateAsync: handleUpdate,
+  };
 }
 
-export function useDeleteInterviewCategory() {
-  const queryClient = useQueryClient();
+export function useDeleteDocument() {
+  const [deleteDocument, result] = useDeleteDocumentMutation();
 
-  return useMutation({
-    mutationFn: (categoryId: string) =>
-      adminAPI.deleteInterviewCategory(categoryId),
-    onSuccess: (_, categoryId) => {
-      queryClient.removeQueries({ queryKey: adminKeys.category(categoryId) });
-      queryClient.invalidateQueries({ queryKey: adminKeys.categories() });
-      toast.success('Interview category deleted successfully');
-    },
-    onError: (error) => {
-      console.error('Failed to delete interview category:', error);
-      toast.error('Failed to delete interview category');
-    },
-  });
+  const handleDelete = async (documentId: string) => {
+    try {
+      await deleteDocument(documentId).unwrap();
+      toast.success('Document deleted successfully!');
+    } catch (error) {
+      toast.error(getErrorMessage(error, 'Failed to delete document'));
+      throw error;
+    }
+  };
+
+  return {
+    ...result,
+    isPending: result.isLoading,
+    mutate: handleDelete,
+    mutateAsync: handleDelete,
+  };
 }
 
-// Question management hooks
-export function useAdminQuestions(skip: number = 0, take: number = 50) {
-  return useQuery({
-    queryKey: adminKeys.questionList(skip, take),
-    queryFn: () => adminAPI.getAllQuestions?.(skip, take),
-  });
-}
-
-export function useCreateQuestion() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: (data: Parameters<typeof adminAPI.createQuestion>[0]) =>
-      adminAPI.createQuestion(data),
-    onSuccess: (question) => {
-      queryClient.invalidateQueries({ queryKey: adminKeys.questions() });
-      toast.success('Question created successfully');
-    },
-    onError: (error) => {
-      console.error('Failed to create question:', error);
-      toast.error('Failed to create question');
-    },
-  });
-}
-
-export function useUpdateQuestion() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: ({
-      questionId,
-      data,
-    }: {
-      questionId: string;
-      data: Partial<QuestionBank>;
-    }) => adminAPI.updateQuestion(questionId, data),
-    onSuccess: (question) => {
-      queryClient.setQueryData(adminKeys.question(question.id), question);
-      queryClient.invalidateQueries({ queryKey: adminKeys.questions() });
-      toast.success('Question updated successfully');
-    },
-    onError: (error) => {
-      console.error('Failed to update question:', error);
-      toast.error('Failed to update question');
-    },
-  });
-}
-
-export function useDeleteQuestion() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: (questionId: string) => adminAPI.deleteQuestion(questionId),
-    onSuccess: (_, questionId) => {
-      queryClient.removeQueries({ queryKey: adminKeys.question(questionId) });
-      queryClient.invalidateQueries({ queryKey: adminKeys.questions() });
-      toast.success('Question deleted successfully');
-    },
-    onError: (error) => {
-      console.error('Failed to delete question:', error);
-      toast.error('Failed to delete question');
-    },
-  });
-}
-
-// Session management hooks
+// Session hooks
 export function useAdminSessions(skip: number = 0, take: number = 50) {
-  return useQuery({
-    queryKey: adminKeys.sessionList(skip, take),
-    queryFn: () => adminAPI.getAllSessions(skip, take),
-  });
+  return useGetAllSessionsQuery({ skip, take });
 }
 
-export function useAdminSession(sessionId: string) {
-  return useQuery({
-    queryKey: adminKeys.session(sessionId),
-    queryFn: () => adminAPI.getSessionDetails(sessionId),
-    enabled: !!sessionId,
+// Alias
+export const useAllSessions = useAdminSessions;
+
+export function useSessionDetails(sessionId: string) {
+  return useGetSessionDetailsQuery(sessionId, {
+    skip: !sessionId,
   });
 }
 
 export function useDeleteSession() {
-  const queryClient = useQueryClient();
+  const [deleteSession, result] = useDeleteSessionMutation();
 
-  return useMutation({
-    mutationFn: (sessionId: string) => adminAPI.deleteSession(sessionId),
-    onSuccess: (_, sessionId) => {
-      queryClient.removeQueries({ queryKey: adminKeys.session(sessionId) });
-      queryClient.invalidateQueries({ queryKey: adminKeys.sessions() });
-      toast.success('Session deleted successfully');
-    },
-    onError: (error) => {
-      console.error('Failed to delete session:', error);
-      toast.error('Failed to delete session');
-    },
-  });
+  const handleDelete = async (sessionId: string) => {
+    try {
+      await deleteSession(sessionId).unwrap();
+      toast.success('Session deleted successfully!');
+    } catch (error) {
+      toast.error(getErrorMessage(error, 'Failed to delete session'));
+      throw error;
+    }
+  };
+
+  return {
+    ...result,
+    isPending: result.isLoading,
+    mutate: handleDelete,
+    mutateAsync: handleDelete,
+  };
 }
 
-// Report management hooks
+// Report hooks
 export function useAdminReports(skip: number = 0, take: number = 50) {
-  return useQuery({
-    queryKey: adminKeys.reportList(skip, take),
-    queryFn: () => adminAPI.getAllReports(skip, take),
-  });
+  return useGetAllReportsQuery({ skip, take });
 }
 
 export function useUpdateReport() {
-  const queryClient = useQueryClient();
+  const [updateReport, result] = useUpdateReportMutation();
 
-  return useMutation({
-    mutationFn: ({
-      reportId,
-      data,
-    }: {
-      reportId: string;
-      data: Partial<EvaluationReport>;
-    }) => adminAPI.updateReport(reportId, data),
-    onSuccess: (report) => {
-      queryClient.setQueryData(adminKeys.report(report.id), report);
-      queryClient.invalidateQueries({ queryKey: adminKeys.reports() });
-      toast.success('Report updated successfully');
-    },
-    onError: (error) => {
-      console.error('Failed to update report:', error);
-      toast.error('Failed to update report');
-    },
-  });
+  const handleUpdate = async (args: {
+    reportId: string;
+    data: Partial<EvaluationReport>;
+  }) => {
+    try {
+      await updateReport(args).unwrap();
+      toast.success('Report updated successfully!');
+    } catch (error) {
+      toast.error(getErrorMessage(error, 'Failed to update report'));
+      throw error;
+    }
+  };
+
+  return {
+    ...result,
+    isPending: result.isLoading,
+    mutate: handleUpdate,
+    mutateAsync: handleUpdate,
+  };
 }
 
 export function useDeleteReport() {
-  const queryClient = useQueryClient();
+  const [deleteReport, result] = useDeleteReportMutation();
 
-  return useMutation({
-    mutationFn: (reportId: string) => adminAPI.deleteReport(reportId),
-    onSuccess: (_, reportId) => {
-      queryClient.removeQueries({ queryKey: adminKeys.report(reportId) });
-      queryClient.invalidateQueries({ queryKey: adminKeys.reports() });
-      toast.success('Report deleted successfully');
-    },
-    onError: (error) => {
-      console.error('Failed to delete report:', error);
-      toast.error('Failed to delete report');
-    },
-  });
+  const handleDelete = async (reportId: string) => {
+    try {
+      await deleteReport(reportId).unwrap();
+      toast.success('Report deleted successfully!');
+    } catch (error) {
+      toast.error(getErrorMessage(error, 'Failed to delete report'));
+      throw error;
+    }
+  };
+
+  return {
+    ...result,
+    isPending: result.isLoading,
+    mutate: handleDelete,
+    mutateAsync: handleDelete,
+  };
 }
 
-// Response management hooks
+// Response hooks
 export function useAdminResponses(skip: number = 0, take: number = 50) {
-  return useQuery({
-    queryKey: adminKeys.responseList(skip, take),
-    queryFn: () => adminAPI.getAllResponses(skip, take),
-  });
+  return useGetAllResponsesQuery({ skip, take });
 }
 
-export function useUpdateResponse() {
-  const queryClient = useQueryClient();
+// Alias
+export const useAllResponses = useAdminResponses;
 
-  return useMutation({
-    mutationFn: ({
-      responseId,
-      data,
-    }: {
-      responseId: string;
-      data: Partial<QuestionResponse>;
-    }) => adminAPI.updateResponse(responseId, data),
-    onSuccess: (response) => {
-      queryClient.setQueryData(adminKeys.response(response.id), response);
-      queryClient.invalidateQueries({ queryKey: adminKeys.responses() });
-      toast.success('Response updated successfully');
-    },
-    onError: (error) => {
-      console.error('Failed to update response:', error);
-      toast.error('Failed to update response');
-    },
-  });
+export function useAdminUpdateResponse() {
+  const [updateResponse, result] = useUpdateResponseMutation();
+
+  const handleUpdate = async (args: {
+    responseId: string;
+    data: Partial<QuestionResponse>;
+  }) => {
+    try {
+      await updateResponse(args).unwrap();
+      toast.success('Response updated successfully!');
+    } catch (error) {
+      toast.error(getErrorMessage(error, 'Failed to update response'));
+      throw error;
+    }
+  };
+
+  return {
+    ...result,
+    isPending: result.isLoading,
+    mutate: handleUpdate,
+    mutateAsync: handleUpdate,
+  };
 }
 
-export function useDeleteResponse() {
-  const queryClient = useQueryClient();
+// Alias
+export const useUpdateResponse = useAdminUpdateResponse;
 
-  return useMutation({
-    mutationFn: (responseId: string) => adminAPI.deleteResponse(responseId),
-    onSuccess: (_, responseId) => {
-      queryClient.removeQueries({ queryKey: adminKeys.response(responseId) });
-      queryClient.invalidateQueries({ queryKey: adminKeys.responses() });
-      toast.success('Response deleted successfully');
-    },
-    onError: (error) => {
-      console.error('Failed to delete response:', error);
-      toast.error('Failed to delete response');
-    },
-  });
+export function useAdminDeleteResponse() {
+  const [deleteResponse, result] = useDeleteResponseMutation();
+
+  const handleDelete = async (responseId: string) => {
+    try {
+      await deleteResponse(responseId).unwrap();
+      toast.success('Response deleted successfully!');
+    } catch (error) {
+      toast.error(getErrorMessage(error, 'Failed to delete response'));
+      throw error;
+    }
+  };
+
+  return {
+    ...result,
+    isPending: result.isLoading,
+    mutate: handleDelete,
+    mutateAsync: handleDelete,
+  };
 }
+
+// Alias
+export const useDeleteResponse = useAdminDeleteResponse;

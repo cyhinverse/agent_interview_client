@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import { Shield, Zap, Cpu, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { interviewCategoriesAPI } from '@/features/interview/interviewApi';
+import { useCreateInterviewSession } from '@/hooks/useInterviewCategories';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 
@@ -23,26 +23,21 @@ interface AgentCardProps {
 }
 
 export function AgentCard({ agent, index }: AgentCardProps) {
-  const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const { mutateAsync: createSession, isLoading: loading } =
+    useCreateInterviewSession();
   const Icon = index === 0 ? Cpu : index === 1 ? Shield : Zap;
 
   const handleStartInterview = async () => {
     try {
-      setLoading(true);
-      const session = await interviewCategoriesAPI.createInterviewSession({
+      const session = await createSession({
         categoryId: agent.id,
       });
 
-      toast.success('Interview session created successfully!');
-
-      // 重定向到面试会话页面
+      // Redirect to the interview session page
       router.push(`/interview/session/${session.id}`);
     } catch (error) {
       console.error('Failed to start interview:', error);
-      toast.error('Failed to start interview. Please try again.');
-    } finally {
-      setLoading(false);
     }
   };
 

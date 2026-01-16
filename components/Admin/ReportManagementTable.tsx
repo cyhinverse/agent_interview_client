@@ -36,12 +36,12 @@ export function ReportManagementTable({
 }: ReportManagementTableProps) {
   const { mutate: deleteReport } = useDeleteReport();
 
-  const getScoreVariant = (
-    score: number
-  ): 'default' | 'secondary' | 'destructive' => {
-    if (score >= 80) return 'default';
-    if (score >= 60) return 'secondary';
-    return 'destructive';
+  const getScoreClass = (score: number) => {
+    if (score >= 80)
+      return 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20';
+    if (score >= 60)
+      return 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20';
+    return 'bg-red-500/10 text-red-500 border-red-500/20';
   };
 
   const formatDate = (dateString: string) => {
@@ -56,7 +56,6 @@ export function ReportManagementTable({
     if (!confirm('Are you sure you want to delete this report?')) return;
     try {
       await deleteReport(reportId);
-      toast.success('Report deleted successfully');
       onRefresh?.();
     } catch (error) {
       console.error('Failed to delete report:', error);
@@ -105,24 +104,41 @@ export function ReportManagementTable({
                 </TableCell>
                 <TableCell>
                   <Badge
-                    variant={getScoreVariant(report.overallScore)}
-                    className="font-bold"
+                    variant="outline"
+                    className={`font-bold ${getScoreClass(
+                      report.overallScore
+                    )}`}
                   >
                     {report.overallScore}%
                   </Badge>
                 </TableCell>
                 <TableCell>
-                  <Badge variant={getScoreVariant(report.technicalScore)}>
+                  <Badge
+                    variant="outline"
+                    className={`font-bold ${getScoreClass(
+                      report.technicalScore
+                    )}`}
+                  >
                     {report.technicalScore}%
                   </Badge>
                 </TableCell>
                 <TableCell>
-                  <Badge variant={getScoreVariant(report.communicationScore)}>
+                  <Badge
+                    variant="outline"
+                    className={`font-bold ${getScoreClass(
+                      report.communicationScore
+                    )}`}
+                  >
                     {report.communicationScore}%
                   </Badge>
                 </TableCell>
                 <TableCell>
-                  <Badge variant={getScoreVariant(report.problemSolvingScore)}>
+                  <Badge
+                    variant="outline"
+                    className={`font-bold ${getScoreClass(
+                      report.problemSolvingScore
+                    )}`}
+                  >
                     {report.problemSolvingScore}%
                   </Badge>
                 </TableCell>

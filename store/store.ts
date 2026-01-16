@@ -12,6 +12,7 @@ import {
 import createWebStorage from 'redux-persist/lib/storage/createWebStorage';
 import authReducer from '@/features/auth/authSlice';
 import adminReducer from '@/features/admin/adminSlice';
+import { apiSlice } from './apiSlice';
 // import interviewSessionsReducer from '@/features/interviewSessions/interviewSessionsSlice';
 
 const createNoopStorage = () => {
@@ -36,6 +37,7 @@ const storage =
 const rootReducer = combineReducers({
   auth: authReducer,
   admin: adminReducer,
+  [apiSlice.reducerPath]: apiSlice.reducer,
   // interviewSessions: interviewSessionsReducer,
 });
 
@@ -63,11 +65,16 @@ export const store = configureStore({
           'interviewSessions/setCurrentSession',
         ],
         // Ignore these field paths in all actions
-        ignoredActionPaths: ['meta.arg', 'payload.timestamp'],
+        ignoredActionPaths: [
+          'meta.arg',
+          'payload.timestamp',
+          'meta.baseQueryMeta.request',
+          'meta.baseQueryMeta.response',
+        ],
         // Ignore these paths in the state
         ignoredPaths: ['interviewSessions.currentSession'],
       },
-    }),
+    }).concat(apiSlice.middleware),
   devTools: process.env.NODE_ENV !== 'production',
 });
 

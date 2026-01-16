@@ -63,7 +63,6 @@ export function UserManagementTable({
     if (!confirm('Are you sure you want to delete this user?')) return;
     try {
       await deleteUser.mutateAsync(userId);
-      toast.success('User deleted successfully');
       onRefresh?.();
     } catch (error) {
       console.error('Failed to delete user:', error);

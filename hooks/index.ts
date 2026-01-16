@@ -1,7 +1,51 @@
-export * from './useAdmin';
-export * from './useAuth';
+export {
+  useLogin,
+  useRegister,
+  useAuthLogout,
+  useAuthChangePassword,
+} from './useAuth';
 export * from './useInterviewCategories';
-export * from './useQuestionBanks';
+export {
+  useQuestions,
+  useQuestion,
+  useQuestionResponse,
+  useSubmitAnswer,
+  useUpdateResponse,
+  useDeleteResponse,
+} from './useQuestionBanks';
+export {
+  useAdminDashboard,
+  useSystemStats,
+  useAdminCategories,
+  useAllCategories,
+  useCreateInterviewCategory,
+  useCreateCategory,
+  useUpdateInterviewCategory,
+  useUpdateCategory,
+  useDeleteInterviewCategory,
+  useDeleteCategory,
+  useAdminUsers,
+  useUpdateUserRole,
+  useDeleteUser,
+  useAdminDocuments,
+  useAllDocuments,
+  useCreateDocument,
+  useUpdateDocument,
+  useDeleteDocument,
+  useAdminSessions,
+  useAllSessions,
+  useSessionDetails,
+  useDeleteSession,
+  useAdminReports,
+  useUpdateReport,
+  useDeleteReport,
+  useAdminResponses,
+  useAllResponses,
+  useAdminUpdateResponse,
+  useUpdateResponse as useAdminUpdateResponseAlias,
+  useAdminDeleteResponse,
+  useDeleteResponse as useAdminDeleteResponseAlias,
+} from './useAdmin';
 export {
   useCurrentUser,
   useUserStats,
@@ -9,5 +53,4 @@ export {
   useEvaluationReport,
   useSessionReport,
   useUpdateUser,
-  // Note: useChangePassword and useLogout are exported from useAuth.ts
 } from './useUsers';

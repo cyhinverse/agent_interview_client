@@ -37,10 +37,10 @@ const navItems = [
     description: 'View and manage interview sessions',
   },
   {
-    title: 'Question Bank',
-    href: '/admin/questions',
+    title: 'Knowledge Documents',
+    href: '/admin/documents',
     icon: FileText,
-    description: 'Manage interview questions',
+    description: 'Manage RAG documents for AI questions',
   },
   {
     title: 'Evaluation Reports',
@@ -158,7 +158,7 @@ export function AdminSidebar() {
                 {isActive && !collapsed && (
                   <motion.div
                     layoutId="active-nav"
-                    className="w-1 h-6 bg-primary-foreground/30 rounded-full"
+                    className="w-1 h-5 bg-primary-foreground/40 rounded-full"
                   />
                 )}
               </motion.div>

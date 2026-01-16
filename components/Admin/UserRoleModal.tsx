@@ -71,18 +71,13 @@ export function UserRoleModal({
     e.preventDefault();
     if (!user || !selectedRole) return;
 
-    updateRole(
-      {
-        userId: user.id,
-        role: selectedRole as 'CANDIDATE' | 'INTERVIEWER' | 'ADMIN',
-      },
-      {
-        onSuccess: () => {
-          onSuccess?.();
-          onClose();
-        },
-      }
-    );
+    updateRole({
+      userId: user.id,
+      role: selectedRole as 'CANDIDATE' | 'INTERVIEWER' | 'ADMIN',
+    }).then(() => {
+      onSuccess?.();
+      onClose();
+    });
   };
 
   if (!user) return null;
