@@ -11,7 +11,7 @@ import {
   Trash2,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Pagination } from '@/components/ui/Pagination';
+import { Pagination } from '@/components/ui/pagination';
 import { useAdminResponses, useAdminDeleteResponse } from '@/hooks/useAdmin';
 import { QuestionResponse } from '@/features/questions/questionsApi';
 import { Loader2 } from 'lucide-react';

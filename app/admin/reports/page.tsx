@@ -5,7 +5,7 @@ import { BarChart, RefreshCw, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ReportManagementTable } from '@/components/Admin/ReportManagementTable';
 import { ReportDetailModal } from '@/components/Admin/ReportDetailModal';
-import { Pagination } from '@/components/ui/Pagination';
+import { Pagination } from '@/components/ui/pagination';
 import { useAdminReports } from '@/hooks/useAdmin';
 import { EvaluationReport } from '@/features/users/usersApi';
 import { Loader2 } from 'lucide-react';

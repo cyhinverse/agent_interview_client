@@ -5,7 +5,7 @@ import { Calendar, RefreshCw, Filter } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { SessionManagementTable } from '@/components/Admin/SessionManagementTable';
 import { SessionDetailModal } from '@/components/Admin/SessionDetailModal';
-import { Pagination } from '@/components/ui/Pagination';
+import { Pagination } from '@/components/ui/pagination';
 import { useAdminSessions } from '@/hooks/useAdmin';
 import { InterviewSession } from '@/features/interview/interviewApi';
 import { Loader2 } from 'lucide-react';

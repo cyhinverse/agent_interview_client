@@ -5,7 +5,7 @@ import { Users, RefreshCw, Filter } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { UserManagementTable } from '@/components/Admin/UserManagementTable';
 import { UserRoleModal } from '@/components/Admin/UserRoleModal';
-import { Pagination } from '@/components/ui/Pagination';
+import { Pagination } from '@/components/ui/pagination';
 import { useAdminUsers } from '@/hooks/useAdmin';
 import { User } from '@/features/users/usersApi';
 import { Loader2 } from 'lucide-react';

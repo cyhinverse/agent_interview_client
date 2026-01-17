@@ -5,7 +5,7 @@ import { FileText, Plus, RefreshCw, Filter } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { DocumentManagementTable } from '@/components/Admin/DocumentManagementTable';
 import { DocumentModal } from '@/components/Admin/DocumentModal';
-import { Pagination } from '@/components/ui/Pagination';
+import { Pagination } from '@/components/ui/pagination';
 import { useAdminDocuments } from '@/hooks/useAdmin';
 import { KnowledgeDocument } from '@/features/admin/adminApi';
 import { Loader2 } from 'lucide-react';
