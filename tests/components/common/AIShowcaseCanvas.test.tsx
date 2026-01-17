@@ -1,6 +1,6 @@
 import React from 'react';
 import { render } from '@testing-library/react';
-import AISHowcaseCanvas from '@/components/common/AIShowcaseCanvas';
+import AISHowcaseCanvas from '@/components/common/AISHowcaseCanvas';
 
 jest.mock('next-themes', () => ({
   useTheme: () => ({ resolvedTheme: 'dark' }),
