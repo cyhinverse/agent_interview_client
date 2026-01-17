@@ -82,5 +82,5 @@ export const apiSlice = createApi({
     'EvaluationReport',
     'QuestionBank',
   ],
-  endpoints: (builder) => ({}),
+  endpoints: (_builder) => ({}),
 });

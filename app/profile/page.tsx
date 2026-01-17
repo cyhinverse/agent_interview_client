@@ -60,7 +60,7 @@ export default function ProfilePage() {
   const userStats = [
     {
       label: 'Rank',
-      value: `Global #${Math.floor(Math.random() * 5000) + 1}`,
+      value: `Global #${stats?.totalSessions || 1}`,
       icon: Trophy,
       color: 'text-yellow-500',
     },
