@@ -1,22 +1,23 @@
-from node:22-alpine as builder
+FROM node:22-alpine AS builder
 
-workdir /app
+WORKDIR /app
 
-copy package*.json tsconfig.json ./
-run npm run install
+COPY package*.json ./
+RUN npm ci
 
-copy . .
-run npm run build
+COPY . .
+RUN npm run build
 
-from node:22-alpine as runner
-workdir /app
+FROM node:22-alpine AS runner
+WORKDIR /app
 
-copy --from=builder /app/node_modules ./node_modules
+ENV NODE_ENV=production
 
-copy --from=builder /app/public ./public
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/public ./public
+COPY --from=builder /app/.next ./.next
+COPY --from=builder /app/package.json ./package.json
 
-copy --from=builder /app/.next ./next
-
-expose 3000
+EXPOSE 3000
 
 CMD ["npm", "run", "start"]
